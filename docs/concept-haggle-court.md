@@ -11,6 +11,10 @@
 5. 2:15 - Four PayPal sandbox payment requests go out. One participant pays in the sandbox and the ledger updates.
 6. 2:45 - Close on the numbers: saved $26, split settled, zero manual math.
 
+## Agent personas
+
+The buyer and seller agents are written in the style of cranky old hecklers, Statler and Waldorf style, no balcony required. Their yelling at each other is the demo centerpiece. This is a style note only: the project does not use or claim any of those characters.
+
 ## Build outline (sandbox, about 6 weeks)
 
 - Week 1: repo shell, one agent chat UI with two panes, PayPal sandbox app and credentials.
