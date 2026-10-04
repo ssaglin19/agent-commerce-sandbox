@@ -13,3 +13,7 @@ Dated notes on public-source reporting about agent payments, commerce, and trust
 ## 2026-10-03
 
 - **EMVCo agentic payments framework consultation:** EMVCo closed public comments Sept. 30 on its proposed card-payment framework. Its proposed Intent Services would support registering, referencing, retrieving and managing consumer-authorized intent before, during and after transactions. EMVCo may also consider KYA capabilities and agentic transaction indicators; its representative said historical intent may be needed for dispute resolution. Feedback review is underway and future specifications are not yet decided. This is a standards proposal, not a launched feature. Source: [PYMNTS, "EMVCo Framework Targets Consumer Intent in Agentic Payments"](https://www.pymnts.com/news/artificial-intelligence/2026/emvco-framework-targets-consumer-intent-agentic-payments/).
+
+## 2026-10-04
+
+- **CellCog Spend consumer purchasing launch:** CellCog says its Spend feature is live for AI employees. Users connect a Link wallet and approve each exact merchant and amount in Link; an approved purchase uses a one-time card. CellCog says multiple employees in one organization can share the wallet, with employee-specific purchase switches, optional caps, purchase histories and a Spend app view of purchases and status. This is a company-authored product description; it describes aggregation across CellCog's own employees, not independent third-party agents. Source: [CellCog, "Your AI Employees Can Now Buy Things, With Your OK"](https://cellcog.ai/blog/ai-employee-spend/).
