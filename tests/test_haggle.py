@@ -1,0 +1,16 @@
+import os, sys, unittest
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
+os.environ.pop("ANTHROPIC_API_KEY", None)
+from haggle import flow, judge, negotiation, paypal
+
+class T(unittest.TestCase):
+    def test_deal_in_range(self):
+        d = negotiation.run(); self.assertIsNotNone(d.agreed); self.assertTrue(165 <= d.agreed <= 200)
+    def test_shares_sum(self):
+        r = judge.rule(168.0, ["a", "b", "c"], [{"who": "a", "text": "skip it"}])
+        self.assertAlmostEqual(sum(r["shares"].values()), 168.0, places=2)
+    def test_flow_mock(self):
+        r = flow.run_session(pp=paypal.MockPayPal())
+        self.assertEqual(r["mode"], "mock"); self.assertEqual(len(r["payouts"]), 4)
+        self.assertAlmostEqual(sum(r["ruling"]["shares"].values()), r["agreed"], places=2)
+if __name__ == "__main__": unittest.main()

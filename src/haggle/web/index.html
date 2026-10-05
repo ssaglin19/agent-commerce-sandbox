@@ -1,0 +1,18 @@
+<!doctype html><meta charset=utf-8><title>Haggle Court</title>
+<style>body{font:16px system-ui;max-width:760px;margin:2rem auto;padding:0 1rem;background:#1b1410;color:#f3e6d3}
+.t{padding:.5rem .8rem;margin:.4rem 0;border-radius:8px;background:#2c211a}.b{border-left:4px solid #d9a441}.s{border-left:4px solid #c0563a}
+button{padding:.6rem 1.2rem;font-size:1rem}h1{color:#d9a441}.p{color:#9ad}</style>
+<h1>Haggle Court</h1><p>Statler haggles, Waldorf heckles, PayPal holds the money, the judge splits the bill.</p>
+<button onclick=go()>Open court</button> <span id=m></span><div id=o></div>
+<script>
+const sleep=ms=>new Promise(r=>setTimeout(r,ms)),o=document.getElementById('o');
+const add=(h,c)=>{o.insertAdjacentHTML('beforeend',`<div class="t ${c||''}">${h}</div>`)};
+async function go(){o.innerHTML='';const r=await (await fetch('/api/run',{method:'POST'})).json();
+ m.textContent='PayPal mode: '+r.mode;
+ for(const t of r.turns){add(`<b>${t.who}</b>: ${t.text}`,t.who[0]=='S'?'b':'s');await sleep(700)}
+ if(r.agreed==null){add('No deal.');return}
+ add(`<b>Agreed: $${r.agreed.toFixed(2)}</b>`);
+ for(const s of r.steps.slice(0,2)){add(`<span class=p>${s}</span>`);await sleep(500)}
+ add(`<b>Judge:</b> ${r.ruling.verdict}<br>`+Object.entries(r.ruling.shares).map(([k,v])=>`${k}: $${v.toFixed(2)}`).join(' &middot; '));
+ for(const s of r.steps.slice(2)){await sleep(500);add(`<span class=p>${s}</span>`)}}
+</script>
