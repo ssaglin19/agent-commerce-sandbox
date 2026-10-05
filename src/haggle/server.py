@@ -12,8 +12,16 @@ class H(BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path in ("/", "/index.html"):
             self._send(200, open(os.path.join(WEB, "index.html"), "rb").read(), "text/html")
+        elif self.path == "/pool":
+            from pool import server as ps
+            self._send(200, open(os.path.join(ps.WEB, "index.html"), "rb").read(), "text/html")
         else: self._send(404, b"not found", "text/plain")
     def do_POST(self):
+        if self.path.startswith("/api/pool"):
+            from pool import session
+            try: out = session.run("failure" if "scenario=failure" in self.path else "happy", haggle="haggle=1" in self.path)
+            except Exception as e: out = {"error": str(e)}
+            return self._send(200, json.dumps(out).encode(), "application/json")
         if self.path.startswith("/api/run"):
             self._send(200, json.dumps(flow.run_session(scenario=("void" if "scenario=void" in self.path else "happy"))).encode(), "application/json")
         elif self.path == "/webhook":

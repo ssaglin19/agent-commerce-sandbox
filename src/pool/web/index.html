@@ -1,0 +1,18 @@
+<!doctype html><meta charset=utf-8><title>Pool</title>
+<style>body{font:15px system-ui;max-width:900px;margin:24px auto;padding:0 12px;color:#222}
+button{padding:8px 14px;margin-right:8px;font-size:15px}table{border-collapse:collapse;width:100%;margin:10px 0}
+td,th{border:1px solid #ddd;padding:6px;text-align:left}.sim{background:#fff4d6}.ok{color:#0a7a2f}.bad{color:#b00020}
+#log div{padding:3px 0;border-bottom:1px solid #eee}.tag{font-size:12px;background:#eee;border-radius:4px;padding:1px 6px}</style>
+<h1>Pool</h1><p>Four people split a $200 purchase. Each person approves their exact share, PayPal sandbox holds the money, and the coordinator buys, returns the remainder, or cleanly unwinds.</p>
+<p><a href=/>Haggle Court</a> | Pool</p><label><input type=checkbox id=hg> Let Statler and Waldorf haggle the price first</label><br><br><button onclick=go('happy')>Run: everyone funds</button><button onclick=go('failure')>Run: one capture fails</button>
+<p id=status></p><div id=out></div>
+<script>
+async function go(s){status.textContent='Running...';out.innerHTML='';
+ const r=await (await fetch('/api/pool?scenario='+s+(hg.checked?'&haggle=1':''),{method:'POST'})).json();
+ if(r.error){status.innerHTML='<span class=bad>'+r.error+'</span>';return}
+ status.innerHTML='State: <b class='+(r.state=='complete'?'ok':'bad')+'>'+r.state+'</b> | PayPal mode: '+r.mode+' | terms '+r.hash;
+ const rows=r.members.map(m=>`<tr class="${m.real?'':'sim'}"><td>${m.name}</td><td>${m.rail}${m.real?'':' <span class=tag>SIMULATED</span>'}</td><td>$${(m.share/100).toFixed(2)}</td><td>${m.status}</td><td>${m.auth||''}</td><td>${m.capture||''}</td><td>${m.refund||''}</td></tr>`).join('');
+ let extra='';if(r.result.remainder!==undefined)extra=`<p>Purchased for $${(r.result.purchased/100).toFixed(2)}. Remainder $${(r.result.remainder/100).toFixed(2)} returned: ${(r.result.payouts||[]).map(p=>p.rail+' batch '+p.batch+(p.real?'':' (simulated)')).join(', ')}</p>`;
+ if(r.result.summary)extra=`<p class=bad>Cancelled. ${r.result.summary}</p>`;
+ out.innerHTML='<table><tr><th>Person</th><th>Rail</th><th>Share</th><th>Status</th><th>Authorization</th><th>Capture</th><th>Refund</th></tr>'+rows+'</table>'+extra+'<h3>Event log</h3><div id=log>'+r.log.map(e=>`<div>${e.t}. <span class=tag>${e.state}</span> <b>${e.who}</b> ${e.kind}: ${e.detail}</div>`).join('')+'</div>'}
+</script>

@@ -4,7 +4,7 @@
 .j{border-left:4px solid #8c6bd9}.c{border-left:4px solid #5aa37a}.e{border-left:4px solid #f33;color:#f99}
 button{padding:.6rem 1.2rem;font-size:1rem;margin-right:.5rem}h1{color:#d9a441}.p{color:#9ad}code{color:#9ad}</style>
 <h1>Haggle Court</h1><p>Statler haggles, Waldorf heckles, PayPal holds the money, the judge decides.</p>
-<button onclick="go('happy')">Open court</button><button onclick="go('void')">Group bails out</button><span id=m></span><div id=o></div>
+<button onclick="go('happy')">Open court</button><button onclick="go('void')">Group bails out</button><a href="/pool" style="margin-left:12px">Next: settle the group split in Pool</a><span id=m></span><div id=o></div>
 <script>
 const sleep=ms=>new Promise(r=>setTimeout(r,ms)),o=document.getElementById('o');
 const esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));

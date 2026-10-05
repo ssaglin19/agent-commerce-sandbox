@@ -1,3 +1,3 @@
 # payments
 
-Placeholder for payments. Implementation is not started.
+The group-funding coordinator lives in `src/pool/` (same project as Haggle Court). See the main README.
