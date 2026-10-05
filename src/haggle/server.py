@@ -16,7 +16,13 @@ class H(BaseHTTPRequestHandler):
             from pool import server as ps
             self._send(200, open(os.path.join(ps.WEB, "index.html"), "rb").read(), "text/html")
         else: self._send(404, b"not found", "text/plain")
+    def _limited(self):
+        from . import ratelimit
+        ip = (self.headers.get("X-Forwarded-For") or self.client_address[0]).split(",")[0].strip()
+        if ratelimit.allow(ip): return False
+        self._send(429, json.dumps({"error": "Too many runs, wait a minute and try again."}).encode(), "application/json"); return True
     def do_POST(self):
+        if self.path.startswith(("/api/pool", "/api/run")) and self._limited(): return
         if self.path.startswith("/api/pool"):
             from pool import session
             try: out = session.run("failure" if "scenario=failure" in self.path else "happy", haggle="haggle=1" in self.path)
