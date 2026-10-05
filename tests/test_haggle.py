@@ -13,4 +13,11 @@ class T(unittest.TestCase):
         r = flow.run_session(pp=paypal.MockPayPal())
         self.assertEqual(r["mode"], "mock"); self.assertEqual(len(r["payouts"]), 4)
         self.assertAlmostEqual(sum(r["ruling"]["shares"].values()), r["agreed"], places=2)
+
+
+class W(unittest.TestCase):
+    def test_webhook_dev_mode(self):
+        from haggle import webhook
+        self.assertTrue(webhook.handle(b'{"event_type":"PAYMENT.AUTHORIZATION.CREATED","id":"WH-1"}', {}))
+        self.assertEqual(webhook.EVENTS[-1]["type"], "PAYMENT.AUTHORIZATION.CREATED")
 if __name__ == "__main__": unittest.main()

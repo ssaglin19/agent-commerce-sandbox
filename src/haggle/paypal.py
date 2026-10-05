@@ -39,6 +39,17 @@ class SandboxPayPal:
     def create_order(self, amount, desc):
         return self._req("/v2/checkout/orders", {"intent": "AUTHORIZE", "purchase_units": [
             {"description": desc, "amount": {"currency_code": "USD", "value": f"{amount:.2f}"}}]})["id"]
+    def pay_with_test_card(self, amount, desc, number="4111111111111111", expiry="2030-01", cvv="123"):
+        """Sandbox-only: create an AUTHORIZE order paid by a test card (no buyer login).
+        Returns (order_id, authorization_id or None, raw_status)."""
+        r = self._req("/v2/checkout/orders", {"intent": "AUTHORIZE",
+            "purchase_units": [{"description": desc, "amount": {"currency_code": "USD", "value": f"{amount:.2f}"}}],
+            "payment_source": {"card": {"number": number, "expiry": expiry, "security_code": cvv, "name": "Test Buyer",
+                "billing_address": {"address_line_1": "1 Main St", "admin_area_2": "San Jose", "admin_area_1": "CA",
+                                    "postal_code": "95131", "country_code": "US"}}}})
+        try: auth = r["purchase_units"][0]["payments"]["authorizations"][0]["id"]
+        except (KeyError, IndexError): auth = None
+        return r["id"], auth, r.get("status")
     def authorize(self, oid):
         r = self._req(f"/v2/checkout/orders/{oid}/authorize", b"{}")
         return r["purchase_units"][0]["payments"]["authorizations"][0]["id"]

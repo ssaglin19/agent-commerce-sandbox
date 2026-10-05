@@ -19,6 +19,11 @@ def main():
     oid = step("create order (AUTHORIZE)", lambda: pp.create_order(168.00, "Haggle Court group buy"))
     if oid: step("get order", lambda: pp._req(f"/v2/checkout/orders/{oid}", None, method="GET").get("status"))
     step("authorize (expected to need buyer approval)", lambda: pp.authorize(oid) if oid else None)
+    card = step("test-card order authorized", lambda: pp.pay_with_test_card(168.00, "Haggle Court card test"))
+    if card and card[1]:
+        step("void authorization", lambda: pp.void(card[1]))
+        c2 = step("2nd test-card order authorized", lambda: pp.pay_with_test_card(168.00, "Haggle Court capture test"))
+        if c2 and c2[1]: step("capture authorization", lambda: pp.capture(c2[1]))
     step("payouts (empty-ish probe)", lambda: pp.payout([{"to": "sb-buyer@personal.example.com", "amount": 1.00}]))
 
 if __name__ == "__main__": main()

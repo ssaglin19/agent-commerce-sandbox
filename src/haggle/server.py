@@ -16,6 +16,11 @@ class H(BaseHTTPRequestHandler):
     def do_POST(self):
         if self.path == "/api/run":
             self._send(200, json.dumps(flow.run_session()).encode(), "application/json")
+        elif self.path == "/webhook":
+            n = int(self.headers.get("Content-Length", 0)); body = self.rfile.read(n)
+            from . import webhook
+            ok = webhook.handle(body, self.headers)
+            self._send(200 if ok else 400, b"ok" if ok else b"bad", "text/plain")
         else: self._send(404, b"not found", "text/plain")
 
 def main():
