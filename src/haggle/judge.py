@@ -11,6 +11,10 @@ def rule(total, people, chat, receipt=None):
     people who say 'skip'/'not paying' owe less ('light'); heavy claimers owe more.
     Shares always sum exactly to total."""
     verdict = None
+    outs = {m["who"] for m in chat if any(w in m["text"].lower() for w in ("i'm out", "not paying", "cancel"))}
+    if len(outs & set(people)) * 2 >= len(people):
+        return {"decision": "void", "shares": {p: 0.0 for p in people},
+                "verdict": f"{len(outs)} of {len(people)} walked out. Court voids the hold, nobody pays."}
     txt = llm.complete(
         "You are a gruff judge. Read the chat and return JSON {\"weights\": {name: number}, \"verdict\": str}.",
         json.dumps({"total": total, "people": people, "chat": chat, "receipt": receipt}), 300)
@@ -31,4 +35,4 @@ def rule(total, people, chat, receipt=None):
     s = sum(weights.values()); cents = {p: int(total * 100 * weights[p] / s) for p in people}
     rem = round(total * 100) - sum(cents.values())
     for p in sorted(people, key=lambda p: -weights[p])[:max(rem, 0)]: cents[p] += 1
-    return {"shares": {p: c / 100 for p, c in cents.items()}, "verdict": verdict}
+    return {"decision": "capture", "shares": {p: c / 100 for p, c in cents.items()}, "verdict": verdict}

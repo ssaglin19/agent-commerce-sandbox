@@ -14,8 +14,8 @@ class H(BaseHTTPRequestHandler):
             self._send(200, open(os.path.join(WEB, "index.html"), "rb").read(), "text/html")
         else: self._send(404, b"not found", "text/plain")
     def do_POST(self):
-        if self.path == "/api/run":
-            self._send(200, json.dumps(flow.run_session()).encode(), "application/json")
+        if self.path.startswith("/api/run"):
+            self._send(200, json.dumps(flow.run_session(scenario=("void" if "scenario=void" in self.path else "happy"))).encode(), "application/json")
         elif self.path == "/webhook":
             n = int(self.headers.get("Content-Length", 0)); body = self.rfile.read(n)
             from . import webhook

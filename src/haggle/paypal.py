@@ -11,6 +11,8 @@ class MockPayPal:
     def create_order(self, amount, desc):
         oid = "MOCK-" + uuid.uuid4().hex[:12].upper()
         self.orders[oid] = {"status": "CREATED", "amount": amount}; return oid
+    def pay_with_test_card(self, amount, desc, **kw):
+        oid = self.create_order(amount, desc); return oid, self.authorize(oid), "COMPLETED"
     def authorize(self, oid):
         self.orders[oid]["status"] = "AUTHORIZED"; return "AUTH-" + oid[5:]
     def capture(self, auth_id):

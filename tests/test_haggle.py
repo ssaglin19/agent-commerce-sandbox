@@ -20,4 +20,13 @@ class W(unittest.TestCase):
         from haggle import webhook
         self.assertTrue(webhook.handle(b'{"event_type":"PAYMENT.AUTHORIZATION.CREATED","id":"WH-1"}', {}))
         self.assertEqual(webhook.EVENTS[-1]["type"], "PAYMENT.AUTHORIZATION.CREATED")
+
+class F(unittest.TestCase):
+    def test_void_scenario(self):
+        r = flow.run_session(pp=paypal.MockPayPal(), scenario="void")
+        self.assertEqual(r["ruling"]["decision"], "void"); self.assertEqual(r["payouts"], [])
+        self.assertNotIn("capture", r["ids"])
+    def test_happy_has_ids(self):
+        r = flow.run_session(pp=paypal.MockPayPal())
+        self.assertEqual(r["ruling"]["decision"], "capture"); self.assertIn("capture", r["ids"])
 if __name__ == "__main__": unittest.main()
