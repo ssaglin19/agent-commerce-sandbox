@@ -6,7 +6,7 @@ Concept and demo story: [docs/concept-haggle-court.md](docs/concept-haggle-court
 
 ## Status
 
-Work in progress. A demo runs on Render in mock mode: https://haggle-court.onrender.com (free tier, sleeps when idle). PayPal sandbox token, order and payout calls work. Sandbox authorize needs a buyer approval, so a full pay-and-settle run is not finished. No keys are in this repo.
+Work in progress. A demo runs on Render in mock mode: https://haggle-court.onrender.com (free tier, sleeps when idle). The sandbox demo uses a test-card payment source, so buyer-wallet login and approval are not required for that path. Sandbox authorization, capture, void and payouts were verified in development, including group-purchase success and failure rollback. The separate PayPal-wallet checkout path still needs a Personal sandbox buyer to approve an order and is not wired into the demo UI. No keys are in this repo.
 
 ## Layout
 
