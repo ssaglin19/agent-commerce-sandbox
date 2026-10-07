@@ -3,6 +3,7 @@ services:
     name: haggle-court
     runtime: python
     plan: free
+    healthCheckPath: /healthz
     buildCommand: "true"
     startCommand: PYTHONPATH=src python3 -m haggle.server
     envVars:
