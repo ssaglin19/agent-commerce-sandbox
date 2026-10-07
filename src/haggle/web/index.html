@@ -1,8 +1,9 @@
 <!doctype html><meta charset=utf-8><title>Haggle Court</title>
-<style>body{font:16px system-ui;max-width:780px;margin:2rem auto;padding:0 1rem;background:#1b1410;color:#f3e6d3}
-.t{padding:.5rem .8rem;margin:.4rem 0;border-radius:8px;background:#2c211a}.b{border-left:4px solid #d9a441}.s{border-left:4px solid #c0563a}
-.j{border-left:4px solid #8c6bd9}.c{border-left:4px solid #5aa37a}.e{border-left:4px solid #f33;color:#f99}
-button{padding:.6rem 1.2rem;font-size:1rem;margin-right:.5rem}h1{color:#d9a441}.p{color:#9ad}code{color:#9ad}a{color:#9ad}</style>
+<style>:root{--navy:#001c64;--blue:#003087;--bright:#0070e0;--gold:#ffd140}
+body{font:16px system-ui;max-width:780px;margin:2rem auto;padding:0 1rem;background:var(--navy);color:#fff}
+.t{padding:.5rem .8rem;margin:.4rem 0;border-radius:8px;background:var(--blue)}.b{border-left:4px solid var(--gold)}.s{border-left:4px solid var(--bright)}
+.j{border-left:4px solid #fff}.c{border-left:4px solid #5fd08a}.e{border-left:4px solid #ff6b6b;color:#ffd0d0}
+button{padding:.6rem 1.2rem;font-size:1rem;margin-right:.5rem;background:var(--bright);color:#fff;border:0;border-radius:6px}button:disabled{opacity:.5}h1{color:#fff}.p{color:#cfe3ff}code{color:var(--gold)}a{color:var(--gold)}</style>
 <h1>Haggle Court</h1><p id=mode>Sandbox or mock demonstration only. No real money. Bot banter is scripted unless an approved model is configured.</p><p>Statler haggles, Waldorf heckles, PayPal holds the money, the judge decides.</p>
 <button onclick="go('happy')">Open court</button><button onclick="go('void')">Group bails out</button><a href="/pool" style="margin-left:12px">Next: settle the group split in Pool</a><span id=m></span><div id=o></div>
 <script>
