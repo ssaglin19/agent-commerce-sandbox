@@ -14,6 +14,10 @@ def split_cents(total, n):
 
 class Plan:
     def __init__(self, item, total_cents, people, deadline="2026-11-01", cancel_rule="void holds, refund captures"):
+        if not people or not isinstance(total_cents, int) or total_cents <= 0:
+            raise PlanError("positive integer total and participants required")
+        if len({p["name"] for p in people}) != len(people):
+            raise PlanError("participant names must be unique")
         shares = split_cents(total_cents, len(people))
         self.item, self.total, self.deadline, self.cancel_rule, self.version = item, total_cents, deadline, cancel_rule, 1
         self.state = "proposed"
@@ -43,6 +47,7 @@ def propose(plan, agents):
 
 def approve(plan, name, max_cents, plan_hash):
     """Record a human approval scoped to exact terms. Rejects a stale hash or a max below the share."""
+    if plan.state not in ("proposed", "approved"): raise PlanError("approvals are closed after funding starts")
     m = next((x for x in plan.members if x["name"] == name), None)
     if not m: raise PlanError("unknown participant")
     if plan_hash != plan.terms_hash(): raise PlanError("approval is for different terms; plan changed")
@@ -53,14 +58,20 @@ def approve(plan, name, max_cents, plan_hash):
 
 def amend(plan, new_total):
     """Any change to terms voids existing approvals; agents cannot change amounts after approval."""
+    if plan.state not in ("proposed", "approved"): raise PlanError("cannot amend after funding starts")
+    if not isinstance(new_total, int) or new_total <= 0: raise PlanError("positive integer total required")
     plan.total, plan.version = new_total, plan.version + 1
     for m, s in zip(plan.members, split_cents(new_total, len(plan.members))): m["share"], m["approval"] = s, None
     plan.state = "proposed"; plan.event("amend", detail=f"terms changed to ${new_total/100:.2f}; all approvals cleared")
 
 def fund(plan, rails):
     if plan.state != "approved": raise PlanError("funding needs an approved plan")
+    if any(not isinstance(m["approval"], dict) or m["approval"].get("hash") != plan.terms_hash()
+           or m["approval"].get("max", 0) < m["share"] for m in plan.members):
+        raise PlanError("current human approvals required for every share")
     plan.set_state("funding_pending")
     for m in plan.members:
+        m["real"] = rails[m["rail"]].mode == "sandbox"
         try:
             r = rails[m["rail"]].authorize(m["share"], f"Pool: {plan.item} share for {m['name']}")
             m["order"], m["auth"], m["status"] = r["order"], r["auth"], "authorized"
@@ -77,6 +88,8 @@ def purchase(plan, rails, final_approval, actual_cost, sabotage=None):
     sabotage: name of a participant whose hold is voided out-of-band first, to demo a capture failure."""
     if plan.state != "ready": raise PlanError("not ready to purchase")
     if not final_approval: raise PlanError("final purchase approval required")
+    if not isinstance(actual_cost, int) or not 0 < actual_cost <= plan.total:
+        raise PlanError("purchase cost must be positive and within the approved total")
     plan.set_state("purchasing", "final approval given")
     if sabotage:
         m = next(x for x in plan.members if x["name"] == sabotage)
@@ -107,16 +120,21 @@ def distribute(plan, rails, actual_cost):
         for rail, items in by.items():
             try:
                 bid = rails[rail].payout(items)
-                plan.result["payouts"].append({"rail": rail, "batch": bid, "real": rails[rail].mode != "simulated", "items": [(i["name"], i["cents"]) for i in items]})
+                plan.result["payouts"].append({"rail": rail, "batch": bid, "real": rails[rail].mode == "sandbox", "items": [(i["name"], i["cents"]) for i in items]})
                 plan.event("payout", detail=f"{rail}: ${sum(i['cents'] for i in items)/100:.2f} to {', '.join(i['name'] for i in items)} batch {bid}" + ("" if rails[rail].mode != "simulated" else " (SIMULATED)"))
             except Exception as e:
-                plan.event("error", detail=f"payout via {rail} failed: {e}")
-    plan.set_state("complete")
+                plan.event("payout_error", detail=f"payout via {rail} failed: {e}")
+    if any(e["kind"] == "payout_error" for e in plan.log):
+        plan.result["summary"] = "Purchase captured, but remainder payout needs follow-up. Do not recapture."
+        plan.set_state("distribution_pending", "one or more payout requests failed")
+        return False
+    plan.set_state("complete", "payout requests submitted; delivery is not yet confirmed")
     return True
 
 def compensate(plan, rails, why):
     """Stop, then undo: void uncaptured holds, refund captures. Record exactly what happened; never claim everyone paid."""
     plan.set_state("compensating", why)
+    unresolved = False
     for m in plan.members:
         try:
             if m["status"] == "captured":
@@ -126,7 +144,8 @@ def compensate(plan, rails, why):
                 rails[m["rail"]].void(m["auth"]); m["status"] = "released"
                 plan.event("release", m["name"], "hold voided, nothing charged")
         except Exception as e:
+            unresolved = True
             m["note"] = str(e); plan.event("error", m["name"], f"compensation step failed, needs manual follow-up: {e}")
-    plan.set_state("cancelled", why)
+    plan.set_state("compensation_pending" if unresolved else "cancelled", why)
     plan.result["summary"] = ", ".join(f"{m['name']}: {m['status']}" for m in plan.members)
     return False
