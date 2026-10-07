@@ -30,3 +30,23 @@ class F(unittest.TestCase):
         r = flow.run_session(pp=paypal.MockPayPal())
         self.assertEqual(r["ruling"]["decision"], "capture"); self.assertIn("capture", r["ids"])
 if __name__ == "__main__": unittest.main()
+
+class WebhookSafety(unittest.TestCase):
+    def setUp(self):
+        from haggle import webhook
+        webhook.EVENTS.clear()
+    def test_invalid_payload(self):
+        from haggle import webhook
+        for b in [b'bad',b'[]',b'{}',b'{"id":[],"event_type":"x"}']:
+            self.assertFalse(webhook.handle(b,{}))
+    def test_deduped_and_marked_unverified(self):
+        from haggle import webhook
+        b=b'{"id":"WH-2","event_type":"PAYMENT.CAPTURE.COMPLETED"}'
+        self.assertTrue(webhook.handle(b,{}));self.assertTrue(webhook.handle(b,{}))
+        self.assertEqual(len(webhook.EVENTS),1);self.assertFalse(webhook.EVENTS[0]['verified'])
+    def test_sandbox_without_id_rejects(self):
+        from haggle import webhook
+        from unittest.mock import patch
+        class Sandbox:mode='sandbox'
+        with patch.object(webhook.paypal,'client',return_value=Sandbox()),patch.dict(os.environ,{},clear=True):
+            self.assertFalse(webhook.handle(b'{"id":"WH-3","event_type":"x"}',{}))
