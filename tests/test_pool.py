@@ -34,3 +34,40 @@ class H(unittest.TestCase):
         self.assertEqual(d["state"], "complete"); self.assertLessEqual(d["total"], 20000)
 
 if __name__ == "__main__": unittest.main()
+
+class Safety(unittest.TestCase):
+    def ready(self, rail=None):
+        p=C.Plan('x', 20000, session.PEOPLE)
+        for m in p.members: C.approve(p,m['name'],5000,p.terms_hash())
+        rails={'paypal':rail or R.MockPayPal(),'venmo':R.SimulatedRail('venmo')}
+        C.fund(p,rails)
+        return p,rails
+    def test_amend_after_hold_rejected(self):
+        p,r=self.ready()
+        with self.assertRaises(C.PlanError): C.amend(p,22000)
+    def test_approve_after_hold_rejected(self):
+        p,r=self.ready()
+        with self.assertRaises(C.PlanError): C.approve(p,'Ana',5000,p.terms_hash())
+    def test_over_budget_before_capture(self):
+        p,r=self.ready()
+        with self.assertRaises(C.PlanError): C.purchase(p,r,True,20001)
+        self.assertTrue(all(m['status']=='authorized' for m in p.members))
+    def test_forged_approval_rejected(self):
+        p=C.Plan('x',20000,session.PEOPLE);p.state='approved'
+        for m in p.members:m['approval']={'hash':'stale','max':5000}
+        with self.assertRaises(C.PlanError): C.fund(p,{})
+    def test_payout_failure_is_not_complete(self):
+        class Broken(R.MockPayPal):
+            def payout(self,items):raise R.RailError('payout unavailable')
+        p,r=self.ready(Broken());C.purchase(p,r,True,18840)
+        self.assertEqual(p.state,'distribution_pending')
+        self.assertTrue(all(m['status']=='captured' for m in p.members))
+    def test_refund_failure_is_not_cancelled(self):
+        class Broken(R.MockPayPal):
+            def refund(self,cap):raise R.RailError('refund unavailable')
+        p,r=self.ready(Broken());C.purchase(p,r,True,18840,sabotage='Cy')
+        self.assertEqual(p.state,'compensation_pending')
+    def test_mock_not_labeled_real(self):
+        p,r=self.ready();self.assertTrue(all(not m['real'] for m in p.members))
+    def test_bad_plan(self):
+        with self.assertRaises(C.PlanError): C.Plan('x',-1,session.PEOPLE)
