@@ -40,7 +40,7 @@ def run_session(people=PEOPLE, chat=None, pp=None, scenario="happy", **kw):
             return out
         cap = pp.capture(auth); out["ids"]["capture"] = cap; out["steps"].append(f"Captured {cap}")
         out["payouts"] = pp.payout([{"to": f"{p.lower()}@example.com", "amount": a} for p, a in ruling["shares"].items()])
-        out["steps"].append("Split payments sent")
+        out["steps"].append("Split payout requests submitted; delivery is not confirmed")
     except Exception as e:  # show the failure in the UI instead of a blank page
         out["error"] = f"{type(e).__name__}: {str(e)[:200]}"
         if out["ids"].get("authorization") and "capture" not in out["ids"]:
