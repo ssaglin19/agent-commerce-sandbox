@@ -22,7 +22,7 @@ def rule(total, people, chat, receipt=None):
     if txt:
         try:
             m = re.search(r"\{.*\}", txt, re.S); j = json.loads(m.group(0))
-            weights = {p: float(j["weights"][p]) for p in people}; verdict = j.get("verdict")
+            weights = {p: min(3.0, max(0.25, float(j["weights"][p]))) for p in people}; verdict = str(j.get("verdict") or "")[:200] or None
         except Exception:
             weights = None
     if not weights:
