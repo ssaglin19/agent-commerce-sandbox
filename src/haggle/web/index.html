@@ -7,6 +7,7 @@ button{padding:.6rem 1.2rem;font-size:1rem;margin-right:.5rem;background:var(--b
 <h1>Haggle Court</h1><p id=mode>Sandbox or mock demonstration only. No real money. Bot banter is scripted unless an approved model is configured.</p><p>Statler haggles, Waldorf heckles, PayPal holds the money, the judge decides.</p>
 <button onclick="go('happy')">Open court</button><button onclick="go('void')">Group bails out</button><a href="/pool" style="margin-left:12px">Next: settle the group split in Pool</a><span id=m></span><div id=o></div>
 <script>
+fetch('/healthz').then(r=>r.json()).then(h=>{if(h.ai&&h.ai!=='scripted')document.getElementById('mode').textContent='Sandbox or mock demonstration only. No real money. Bot banter and the judge\'s weighting come from Google Gemini (Vertex AI) with scripted fallback; code computes every price and share.'}).catch(()=>{});
 const sleep=ms=>new Promise(r=>setTimeout(r,ms)),o=document.getElementById('o');
 const esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 const add=(h,c)=>{o.insertAdjacentHTML('beforeend',`<div class="t ${c||''}">${h}</div>`)};
@@ -16,7 +17,7 @@ async function go(sc){o.innerHTML='';m.textContent=' running...';
  const response=await fetch('/api/run?scenario='+sc,{method:'POST'});
  if(!response.ok){let msg='Server returned '+response.status;try{msg=(await response.json()).error||msg}catch{}throw new Error(msg)}
  const r=await response.json();if(r.error&&!r.turns)throw new Error(r.error);
- m.textContent=' PayPal mode: '+r.mode;
+ m.textContent=' PayPal mode: '+r.mode+(r.ai&&r.ai.provider!=='scripted'?' | AI: '+r.ai.provider+(r.ai.model_calls_ok!=null?' ('+r.ai.model_calls_ok+' model calls ok)':''):' | AI: scripted');
  for(const t of r.turns){add(`<b>${esc(t.who)}</b>: ${esc(t.text)}`,t.who[0]=='S'?'b':'s');await sleep(600)}
  if(r.agreed==null){add('No deal.');return}
  add(`<b>Agreed: $${r.agreed.toFixed(2)}</b>`);await sleep(500);
