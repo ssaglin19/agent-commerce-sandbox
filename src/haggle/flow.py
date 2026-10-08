@@ -1,5 +1,5 @@
 """End-to-end court session: haggle -> hold -> judge -> capture or void -> splits."""
-from . import negotiation, judge, paypal
+from . import negotiation, judge, paypal, llm
 
 PEOPLE = ["Ana", "Ben", "Cam", "Dee"]
 CHAT = [{"who": "Ana", "text": "I'll use the espresso machine every day"},
@@ -24,8 +24,9 @@ def hold(pp, amount, desc):
 def run_session(people=PEOPLE, chat=None, pp=None, scenario="happy", **kw):
     chat = chat or SCENARIOS.get(scenario, CHAT)
     pp = pp or paypal.client()
+    ai0 = llm.STATS["ok"]
     deal = negotiation.run(**kw)
-    out = {"mode": pp.mode, "scenario": scenario, "item": deal.item, "turns": deal.turns,
+    out = {"mode": pp.mode, "ai": {"provider": llm.provider()}, "scenario": scenario, "item": deal.item, "turns": deal.turns,
            "agreed": deal.agreed, "chat": chat, "steps": [], "ids": {}}
     if deal.agreed is None:
         out["steps"].append("No deal. Nothing authorized."); return out
@@ -35,6 +36,7 @@ def run_session(people=PEOPLE, chat=None, pp=None, scenario="happy", **kw):
         out["steps"].append(f"Funds held (authorized) order {oid}")
         ruling = judge.rule(deal.agreed, people, chat, receipt={"order": oid, "auth": auth, "total": deal.agreed})
         out["ruling"] = ruling
+        out["ai"]["model_calls_ok"] = llm.STATS["ok"] - ai0
         if ruling["decision"] == "void":
             pp.void(auth); out["steps"].append("Court voided the hold. Nobody pays."); out["payouts"] = []
             return out
