@@ -9,6 +9,9 @@ Two heckling bots haggle the price. The demo simulates approvals for exact share
 ## Inspiration
 Group buys die in the group chat. Everyone argues about price, half the group drops out, and nobody ever pays. We wanted the argument and the money to live in one place, and wanted it to be funny.
 
+## Note on the demo video
+The video was recorded on Oct 7, 2026 against the live Gemini (Vertex AI) role. The public demo falls back to scripted lines whenever no key is configured or a call cap is reached, and the key is removed from the public demo on Oct 26, 2026. To run the live AI role, see "Try the live AI role yourself" in the README.
+
 ## What it does
 One project, two parts: Haggle Court (the negotiation) and Pool (the settlement).
 
