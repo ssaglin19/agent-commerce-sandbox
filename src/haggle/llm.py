@@ -107,3 +107,13 @@ def complete(system, prompt, max_tokens=120):
             except Exception: pass
         LAST["err"] = (type(e).__name__ + " " + str(code) + " " + detail).strip()
         return None
+
+
+def clip(text, n):
+    """Trim to n chars at a sentence or word boundary, never mid-word."""
+    text = text.strip()
+    if len(text) <= n: return text
+    cut = text[:n]
+    ends = max(cut.rfind(c) for c in ".!?")
+    if ends >= n // 2: return cut[:ends + 1]
+    return cut.rsplit(" ", 1)[0].rstrip(",;:-") + "..."
