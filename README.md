@@ -16,6 +16,14 @@ Work in progress. A demo runs on Render in mock mode: https://haggle-court.onren
 - `tests/` - tests for haggle and pool
 - `docs/` - concept and notes
 
+## Try the live AI role yourself
+The public demo may run scripted lines (no key is kept on it after Oct 26, 2026, and it is capped). To see the Gemini role, run locally with your own Google Cloud service-account key (Vertex AI enabled):
+
+    export GOOGLE_APPLICATION_CREDENTIALS=/path/to/key.json   # or GOOGLE_SA_JSON with the JSON text
+    PYTHONPATH=src python3 -m haggle.server
+
+Then open http://localhost:8000 and check `/healthz`: `"ai": "vertex"` means live, `"scripted"` means fallback. `ANTHROPIC_API_KEY` works as an alternative provider. The submission video was recorded Oct 7, 2026 against the live Gemini role.
+
 ## Run and test
 
 ```sh
