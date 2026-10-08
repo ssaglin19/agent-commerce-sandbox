@@ -11,7 +11,7 @@ class H(BaseHTTPRequestHandler):
         self.send_header("Content-Length", str(len(body))); self.end_headers(); self.wfile.write(body)
     def do_GET(self):
         if self.path == "/healthz":
-            return self._send(200, json.dumps({"status": "ok", "mode": flow.paypal.client().mode, "ai": llm.provider()}).encode(), "application/json")
+            return self._send(200, json.dumps({"status": "ok", "mode": flow.paypal.client().mode, "ai": llm.provider(), "ai_last_error": llm.LAST.get("err")}).encode(), "application/json")
         if self.path in ("/", "/index.html"):
             self._send(200, open(os.path.join(WEB, "index.html"), "rb").read(), "text/html")
         elif self.path == "/pool":
