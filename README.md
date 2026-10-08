@@ -28,7 +28,7 @@ The public free Render instance can take time to wake; a single failed fetch is 
 
 ## Demo limits
 
-- Banter is scripted by default; the judge and coordinator are deterministic rules, not a live LLM.
+- Banter is scripted by default. If a Google Cloud key is configured (`GOOGLE_SA_JSON` or `GOOGLE_APPLICATION_CREDENTIALS`), Gemini on Vertex AI writes the bot banter and suggests the judge's weights. Code computes every price and share (model text has digits stripped, weights are clamped). Any error or call cap (`HAGGLE_MAX_LLM_CALLS`, `HAGGLE_MAX_LLM_CALLS_PER_DAY`) falls back to scripted lines. `/healthz` and each run report which mode was used. The pool coordinator is deterministic rules.
 - The canned group demo simulates human approval and merchant purchase. It is not a production human-authentication flow.
 - Mock PayPal and simulated Venmo are never labeled real sandbox funding.
 - A payout batch ID confirms submission, not delivery. Failed payouts stay distribution_pending; failed refunds/voids stay compensation_pending.
