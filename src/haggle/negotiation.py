@@ -1,4 +1,5 @@
 """Buyer (Statler) and seller (Waldorf) haggle in rounds until they meet or give up."""
+import re
 from dataclasses import dataclass, field
 from . import llm
 
@@ -23,9 +24,12 @@ class Deal:
 def _say(role, persona, fallback, price, deal):
     text = llm.complete(
         f"You are {persona}, a crotchety heckler haggling over a group buy of {deal.item}. "
-        "One short insulting sentence, then the price. No emojis.",
+        "Write one short, funny, insulting sentence. No numbers, no prices, no emojis.",
         f"Current price on table: ${price:.2f}. Your role: {role}.")
-    return text or f"{fallback} ${price:.2f}."
+    if text:
+        text = re.sub(r"\$?\d[\d,.]*", "", text.splitlines()[0]).strip()[:140]
+    # The price always comes from code, never from the model.
+    return f"{text or fallback} ${price:.2f}."
 
 def run(item="Group-buy espresso machine", list_price=200.0, buyer_target=165.0,
         seller_floor=168.0, max_rounds=8):
