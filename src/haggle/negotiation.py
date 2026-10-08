@@ -24,10 +24,10 @@ class Deal:
 def _say(role, persona, fallback, price, deal):
     text = llm.complete(
         f"You are {persona}, a crotchety heckler haggling over a group buy of {deal.item}. "
-        "Write one short, funny, insulting sentence. No numbers, no prices, no emojis.",
-        f"Current price on table: ${price:.2f}. Your role: {role}.")
+        "Write one funny, insulting sentence of at most 18 words, aimed at the other side. No numbers, no prices, no emojis.",
+        f"Current price on table: ${price:.2f}. Your role: {role}.", 80)
     if text:
-        text = re.sub(r"\$?\d[\d,.]*", "", text.splitlines()[0]).strip()[:140]
+        text = re.sub(r"\$?\d[\d,.]*", "", text.splitlines()[0]).strip(); text = llm.clip(text, 140)
     # The price always comes from code, never from the model.
     return f"{text or fallback} ${price:.2f}."
 
