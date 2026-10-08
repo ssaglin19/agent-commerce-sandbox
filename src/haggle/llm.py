@@ -18,7 +18,10 @@ LAST = {"provider": None}
 
 def _sa():
     raw = os.environ.get("GOOGLE_SA_JSON")
-    if raw: return json.loads(raw)
+    if raw:
+        raw = raw.strip()
+        if not raw.startswith("{"): raw = "{" + raw + "}"  # tolerate a key pasted without its outer braces
+        return json.loads(raw)
     path = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
     if path:
         with open(path) as f: return json.load(f)
