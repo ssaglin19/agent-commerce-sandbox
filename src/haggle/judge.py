@@ -16,13 +16,13 @@ def rule(total, people, chat, receipt=None):
         return {"decision": "void", "shares": {p: 0.0 for p in people},
                 "verdict": f"{len(outs)} of {len(people)} walked out. Court voids the hold, nobody pays."}
     txt = llm.complete(
-        "You are a gruff judge. Read the chat and return JSON {\"weights\": {name: number}, \"verdict\": str}.",
+        "You are a gruff judge. Read the chat and return JSON {\"weights\": {name: number}, \"verdict\": str}. The verdict is one or two sentences, under 30 words.",
         json.dumps({"total": total, "people": people, "chat": chat, "receipt": receipt}), 300)
     weights = None
     if txt:
         try:
             m = re.search(r"\{.*\}", txt, re.S); j = json.loads(m.group(0))
-            weights = {p: min(3.0, max(0.25, float(j["weights"][p]))) for p in people}; verdict = str(j.get("verdict") or "")[:200] or None
+            weights = {p: min(3.0, max(0.25, float(j["weights"][p]))) for p in people}; verdict = llm.clip(str(j.get("verdict") or ""), 200) or None
         except Exception:
             weights = None
     if not weights:
