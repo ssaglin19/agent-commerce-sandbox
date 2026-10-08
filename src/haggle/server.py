@@ -1,7 +1,7 @@
 """Tiny stdlib web server: GET / page, POST /api/run -> session JSON. python -m haggle.server"""
 import json, os
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from . import flow
+from . import flow, llm
 
 WEB = os.path.join(os.path.dirname(__file__), "web")
 
@@ -11,7 +11,7 @@ class H(BaseHTTPRequestHandler):
         self.send_header("Content-Length", str(len(body))); self.end_headers(); self.wfile.write(body)
     def do_GET(self):
         if self.path == "/healthz":
-            return self._send(200, json.dumps({"status": "ok", "mode": flow.paypal.client().mode}).encode(), "application/json")
+            return self._send(200, json.dumps({"status": "ok", "mode": flow.paypal.client().mode, "ai": llm.provider()}).encode(), "application/json")
         if self.path in ("/", "/index.html"):
             self._send(200, open(os.path.join(WEB, "index.html"), "rb").read(), "text/html")
         elif self.path == "/pool":
