@@ -99,5 +99,11 @@ def complete(system, prompt, max_tokens=120):
         LAST["provider"] = p
         if text: STATS["ok"] += 1
         return text or None
-    except Exception:
+    except Exception as e:
+        code = getattr(e, "code", "")
+        detail = ""
+        if code and hasattr(e, "read"):
+            try: detail = str(json.loads(e.read()).get("error", {}).get("status", ""))
+            except Exception: pass
+        LAST["err"] = (type(e).__name__ + " " + str(code) + " " + detail).strip()
         return None
