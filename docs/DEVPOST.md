@@ -17,7 +17,7 @@ Statler (buyer bot) and Waldorf (seller bot) haggle the price of a group buy, tr
 Pool turns the agreed price into a group-funded purchase. Participant agents review the terms, but only a human approval tied to the exact terms counts, and any change clears all approvals. The coordinator holds each person's share through PayPal, asks for a final approval, captures, buys, and requests remainder payouts through Payouts. In the failure demo one capture fails: the coordinator stops, records the partial result, requests refunds for successful captures and voids the other holds, and never claims everyone paid. Payout or compensation failures remain pending for follow-up. Venmo is shown as a labeled simulation because its sandbox has no hold step.
 
 ## How we built it
-Python standard library, no framework. A negotiation loop for the two bots, a rule-based judge that reads the order and chat, a PayPal client with a real sandbox implementation and a mock with the same interface, a small HTTP server and one-page UI, and a signature-checking webhook receiver. Live webhook delivery remains unverified. PayPal APIs: OAuth2, Orders v2 (create, authorize, capture), Payments v2 (void, refund), and Payouts. The coordinator is an explicit state machine with an event log that deduplicates log keys (not a durable transaction retry ledger). 25 unit tests run in mock mode. Banter is scripted by default and settlement rules are deterministic, so the current build should not be described as LLM-driven. Merchant purchase and participant approvals are simulated in the demo.
+Python standard library, no framework. A negotiation loop for the two bots, a rule-based judge that reads the order and chat (optionally Gemini on Vertex AI writes the banter and suggests judge weights; code computes all money and falls back to scripted on any error), a PayPal client with a real sandbox implementation and a mock with the same interface, a small HTTP server and one-page UI, and a signature-checking webhook receiver. Live webhook delivery remains unverified. PayPal APIs: OAuth2, Orders v2 (create, authorize, capture), Payments v2 (void, refund), and Payouts. The coordinator is an explicit state machine with an event log that deduplicates log keys (not a durable transaction retry ledger). 25 unit tests run in mock mode. Banter is scripted by default and settlement rules are deterministic, so the current build should not be described as LLM-driven. Merchant purchase and participant approvals are simulated in the demo.
 
 ## Challenges
 A plain Orders authorize needs buyer approval in a browser, which breaks an automated agent flow. In the sandbox we use a test card payment source so the hold happens without a login, and we kept the approval step as the real-world path.
@@ -29,7 +29,7 @@ A full hold, judge, capture or void, payout cycle running against the live PayPa
 Authorize-then-decide fits agent commerce well: an agent can commit to a price without moving money until a second agent signs off.
 
 ## What's next
-Buyer wallet approval step, LLM-written banter, webhook-driven status updates, and multi-seller bidding.
+Buyer wallet approval step, webhook-driven status updates, and multi-seller bidding.
 
 ## Built with
 Python, PayPal Orders v2, PayPal Payments v2, PayPal Payouts, PayPal webhooks
