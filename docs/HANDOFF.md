@@ -20,3 +20,8 @@ Google credits expire around Oct 27 and the Cloud account is paid. Before then:
    - Devpost text and video caption say the video was recorded Oct 7 with live Gemini, and the public demo falls back to scripted lines when no key is configured.
    - README has "Try the live AI role yourself": judges run locally with their own key. No public secrets.
    - Optional, needs the owner's approval: a funded key kept on Render through Dec 15 (cost about $0.002 per live run by estimate, capped 300 runs per day). Do not restore without approval.
+
+## Buyer-wallet approval path (built Oct 14, 2026)
+- Code: src/haggle/wallet.py, paypal.create_approval_order, /api/wallet/start, /wallet/return, /wallet/cancel, "Approve as buyer" button. Tests: tests/test_wallet.py (local fake PayPal server). 38 tests pass.
+- Verified locally with screenshots of the return page (capture and void paths) in mock mode. Not yet verified: real PayPal sandbox buyer approval (needs a Personal sandbox buyer and sandbox client keys on Render, owner decision pending) and live webhook delivery.
+- Render deploy of this commit: manual deploy returned "Deploy Error: Service Unavailable" on Oct 14 4:43-4:44pm CDT while https://status.render.com showed Builds and Deploys degraded (fix being monitored since 19:45 UTC). One bounded retry is scheduled. Until it deploys, the public demo runs the previous commit and /api/wallet/start returns 404.
