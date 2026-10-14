@@ -32,20 +32,25 @@ def run_session(people=PEOPLE, chat=None, pp=None, scenario="happy", **kw):
         out["steps"].append("No deal. Nothing authorized."); return out
     try:
         oid, auth = hold(pp, deal.agreed, deal.item)
-        out["ids"].update(order=oid, authorization=auth)
-        out["steps"].append(f"Funds held (authorized) order {oid}")
-        ruling = judge.rule(deal.agreed, people, chat, receipt={"order": oid, "auth": auth, "total": deal.agreed})
-        out["ruling"] = ruling
-        out["ai"]["model_calls_ok"] = llm.STATS["ok"] - ai0
-        if ruling["decision"] == "void":
-            pp.void(auth); out["steps"].append("Court voided the hold. Nobody pays."); out["payouts"] = []
-            return out
-        cap = pp.capture(auth); out["ids"]["capture"] = cap; out["steps"].append(f"Captured {cap}")
-        out["payouts"] = pp.payout([{"to": f"{p.lower()}@example.com", "amount": a} for p, a in ruling["shares"].items()])
-        out["steps"].append("Split payout requests submitted; delivery is not confirmed")
+        settle(pp, out, deal.agreed, oid, auth, people, chat, ai0)
     except Exception as e:  # show the failure in the UI instead of a blank page
         out["error"] = f"{type(e).__name__}: {str(e)[:200]}"
         if out["ids"].get("authorization") and "capture" not in out["ids"]:
             try: pp.void(out["ids"]["authorization"]); out["steps"].append("Error, so the hold was voided.")
             except Exception: pass
+    return out
+
+def settle(pp, out, agreed, oid, auth, people, chat, ai0=0):
+    """Judge, then capture or void, then request split payouts. Shared by the test-card and wallet paths."""
+    out["ids"].update(order=oid, authorization=auth)
+    out["steps"].append(f"Funds held (authorized) order {oid}")
+    ruling = judge.rule(agreed, people, chat, receipt={"order": oid, "auth": auth, "total": agreed})
+    out["ruling"] = ruling
+    out["ai"]["model_calls_ok"] = llm.STATS["ok"] - ai0
+    if ruling["decision"] == "void":
+        pp.void(auth); out["steps"].append("Court voided the hold. Nobody pays."); out["payouts"] = []
+        return out
+    cap = pp.capture(auth); out["ids"]["capture"] = cap; out["steps"].append(f"Captured {cap}")
+    out["payouts"] = pp.payout([{"to": f"{p.lower()}@example.com", "amount": a} for p, a in ruling["shares"].items()])
+    out["steps"].append("Split payout requests submitted; delivery is not confirmed")
     return out
