@@ -19,14 +19,31 @@ class H(BaseHTTPRequestHandler):
             from . import wallet
             tok = (parse_qs(urlparse(self.path).query).get("token") or [""])[0]
             out = wallet.finish(tok)
-            self._send(200, ("<!doctype html><meta charset=utf-8><title>Haggle Court</title><body style='font-family:sans-serif;background:#001C64;color:#fff;padding:2em'><h2>Haggle Court: wallet result</h2><pre style='white-space:pre-wrap'>%s</pre><p><a style='color:#FFD140' href='/'>Back</a>"
-                        % json.dumps(out, indent=1).replace("&", "&amp;").replace("<", "&lt;")).encode(), "text/html")
+            self._send(200, self._wallet_page(out).encode(), "text/html")
         elif self.path.startswith("/wallet/cancel"):
             self._send(200, b"<!doctype html><meta charset=utf-8><body style='font-family:sans-serif;background:#001C64;color:#fff;padding:2em'>Approval cancelled. Nothing was authorized. <a style='color:#FFD140' href='/'>Back</a>", "text/html")
         elif self.path == "/pool":
             from pool import server as ps
             self._send(200, open(os.path.join(ps.WEB, "index.html"), "rb").read(), "text/html")
         else: self._send(404, b"not found", "text/plain")
+    def _wallet_page(self, out):
+        from html import escape as e
+        rows = []
+        if out.get("error") and not out.get("turns"): rows.append("<p><b>%s</b></p>" % e(out["error"]))
+        else:
+            rows.append("<p>Mode: %s. Agreed price: <b>$%.2f</b> (set by code).</p>" % (e(str(out.get("mode"))), out.get("agreed") or 0))
+            rows.append("<h3>Steps</h3><ul>" + "".join("<li>%s</li>" % e(x) for x in out.get("steps", [])) + "</ul>")
+            r = out.get("ruling")
+            if r:
+                rows.append("<h3>Judge [%s]</h3><p>%s</p><p>%s</p>" % (e(r["decision"]), e(r.get("verdict") or ""),
+                    " &middot; ".join("%s: $%.2f" % (e(k), v) for k, v in r["shares"].items())))
+            if out.get("payouts"):
+                rows.append("<h3>Payout requests</h3><ul>" + "".join("<li>%s $%.2f %s</li>" % (e(p.get("to", "batch")), p.get("amount", 0), e(str(p.get("status", p.get("batch", ""))))) for p in out["payouts"]) + "</ul><p>Delivery is not confirmed.</p>")
+            if out.get("error"): rows.append("<p><b>Error:</b> %s</p>" % e(out["error"]))
+            rows.append("<details><summary>Raw result</summary><pre style='white-space:pre-wrap'>%s</pre></details>" % e(json.dumps(out, indent=1)))
+        return ("<!doctype html><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><title>Haggle Court</title>"
+                "<body style='font-family:sans-serif;background:#001C64;color:#fff;max-width:760px;margin:2em auto;padding:0 1em'>"
+                "<h2>Haggle Court: buyer approval result</h2>" + "".join(rows) + "<p><a style='color:#FFD140' href='/'>Back</a></p>")
     def _limited(self):
         from . import ratelimit
         # Use the nearest proxy entry, not a user-prepended X-Forwarded-For value.
