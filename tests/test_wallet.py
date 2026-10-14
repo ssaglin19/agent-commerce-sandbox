@@ -32,6 +32,10 @@ class WalletMock(unittest.TestCase):
         self.assertEqual(r["path"], "wallet"); self.assertIn("capture", r["ids"])
         self.assertAlmostEqual(sum(r["ruling"]["shares"].values()), r["agreed"], places=2)
         self.assertIn("error", wallet.finish(s["order"], pp=pp))  # token is single use
+    def test_default_client_keeps_state_between_start_and_finish(self):
+        s = wallet.start("http://localhost:8000", "happy")
+        r = wallet.finish(s["order"])
+        self.assertNotIn("error", r); self.assertIn("capture", r["ids"])
     def test_unknown_token_refused(self):
         self.assertIn("error", wallet.finish("NOPE", pp=paypal.MockPayPal()))
     def test_void_path_captures_nothing(self):
