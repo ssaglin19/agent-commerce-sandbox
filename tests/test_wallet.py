@@ -31,6 +31,7 @@ class WalletMock(unittest.TestCase):
         r = wallet.finish(s["order"], pp=pp)
         self.assertEqual(r["path"], "wallet"); self.assertIn("capture", r["ids"])
         self.assertAlmostEqual(sum(r["ruling"]["shares"].values()), r["agreed"], places=2)
+        self.assertTrue(all(x.startswith("Simulated") for x in r["steps"]))
         self.assertIn("error", wallet.finish(s["order"], pp=pp))  # token is single use
     def test_default_client_keeps_state_between_start_and_finish(self):
         s = wallet.start("http://localhost:8000", "happy")
@@ -63,6 +64,7 @@ class WalletSandboxFake(unittest.TestCase):
         s = wallet.start("http://localhost:8000", "happy", pp=pp)
         r = wallet.finish(s["order"], pp=pp)
         self.assertEqual(r["ids"]["authorization"], "AUTH1"); self.assertEqual(r["ids"]["capture"], "CAP1")
+        self.assertEqual(r["steps"][0], "Buyer approved in the PayPal sandbox")
     def test_webhook_verification_calls_paypal(self):
         os.environ["PAYPAL_CLIENT_ID"], os.environ["PAYPAL_CLIENT_SECRET"] = "id", "sec"
         h = {"PAYPAL-AUTH-ALGO": "a", "PAYPAL-CERT-URL": "c", "PAYPAL-TRANSMISSION-ID": "t", "PAYPAL-TRANSMISSION-SIG": "s", "PAYPAL-TRANSMISSION-TIME": "x"}
