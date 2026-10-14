@@ -19,14 +19,14 @@ def start(base_url, scenario="happy", pp=None):
         now = time.time()
         for k in [k for k, v in _PENDING.items() if now - v["t"] > TTL]: del _PENDING[k]
         if len(_PENDING) >= 50: _PENDING.pop(next(iter(_PENDING)))
-        _PENDING[oid] = {"deal": deal, "scenario": scenario, "t": now}
+        _PENDING[oid] = {"deal": deal, "scenario": scenario, "t": now, "pp": pp}
     return {"mode": pp.mode, "order": oid, "approve_url": url, "agreed": deal.agreed, "turns": deal.turns}
 
 def finish(token, pp=None):
-    pp = pp or paypal.client()
     with _lock:
         pend = _PENDING.pop(token, None)  # single use; unknown or reused tokens are refused
     if not pend: return {"error": "Unknown or already used approval token."}
+    pp = pp or pend["pp"]  # the same client that created the order (the mock keeps order state in memory)
     deal, scenario = pend["deal"], pend["scenario"]
     chat = flow.SCENARIOS.get(scenario, flow.CHAT)
     out = {"mode": pp.mode, "ai": {"provider": llm.provider()}, "scenario": scenario, "item": deal.item, "turns": deal.turns,
