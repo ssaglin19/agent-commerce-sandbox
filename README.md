@@ -24,6 +24,9 @@ The public demo may run scripted lines (no key is kept on it after Oct 26, 2026,
 
 Then open http://localhost:8000 and check `/healthz`: `"ai": "vertex"` means live, `"scripted"` means fallback. `ANTHROPIC_API_KEY` works as an alternative provider. The submission video was recorded Oct 7, 2026 against the live Gemini role.
 
+## Buyer-wallet approval path
+`Approve as buyer` on the page (or `POST /api/wallet/start`) negotiates a price and creates an AUTHORIZE order that the buyer must approve in PayPal. PayPal redirects to `/wallet/return`, which authorizes the approved order once (tokens are single-use and server-issued), then the court rules, captures or voids, and requests payouts. In mock mode the approval link is the return link. Against the real sandbox it needs a Personal sandbox buyer account and `PAYPAL_CLIENT_ID` / `PAYPAL_CLIENT_SECRET`; that real-sandbox run is not verified yet. Request shape and the full flow are tested against a local fake PayPal server in `tests/test_wallet.py`.
+
 ## Run and test
 
 ```sh
