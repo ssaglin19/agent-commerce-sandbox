@@ -14,6 +14,15 @@ class H(BaseHTTPRequestHandler):
             return self._send(200, json.dumps({"status": "ok", "mode": flow.paypal.client().mode, "ai": llm.provider(), "ai_last_error": llm.LAST.get("err")}).encode(), "application/json")
         if self.path in ("/", "/index.html"):
             self._send(200, open(os.path.join(WEB, "index.html"), "rb").read(), "text/html")
+        elif self.path.startswith("/wallet/return"):
+            from urllib.parse import urlparse, parse_qs
+            from . import wallet
+            tok = (parse_qs(urlparse(self.path).query).get("token") or [""])[0]
+            out = wallet.finish(tok)
+            self._send(200, ("<!doctype html><meta charset=utf-8><title>Haggle Court</title><body style='font-family:sans-serif;background:#001C64;color:#fff;padding:2em'><h2>Haggle Court: wallet result</h2><pre style='white-space:pre-wrap'>%s</pre><p><a style='color:#FFD140' href='/'>Back</a>"
+                        % json.dumps(out, indent=1).replace("&", "&amp;").replace("<", "&lt;")).encode(), "text/html")
+        elif self.path.startswith("/wallet/cancel"):
+            self._send(200, b"<!doctype html><meta charset=utf-8><body style='font-family:sans-serif;background:#001C64;color:#fff;padding:2em'>Approval cancelled. Nothing was authorized. <a style='color:#FFD140' href='/'>Back</a>", "text/html")
         elif self.path == "/pool":
             from pool import server as ps
             self._send(200, open(os.path.join(ps.WEB, "index.html"), "rb").read(), "text/html")
@@ -25,11 +34,18 @@ class H(BaseHTTPRequestHandler):
         if ratelimit.allow(ip): return False
         self._send(429, json.dumps({"error": "Too many runs, wait a minute and try again."}).encode(), "application/json"); return True
     def do_POST(self):
-        if self.path.startswith(("/api/pool", "/api/run", "/webhook")) and self._limited(): return
+        if self.path.startswith(("/api/pool", "/api/run", "/api/wallet", "/webhook")) and self._limited(): return
         if self.path.startswith("/api/pool"):
             from pool import session
             try: out = session.run("failure" if "scenario=failure" in self.path else "happy", haggle="haggle=1" in self.path)
             except Exception as e: out = {"error": str(e)}
+            return self._send(200, json.dumps(out).encode(), "application/json")
+        if self.path.startswith("/api/wallet/start"):
+            from . import wallet
+            host = (self.headers.get("Host") or "localhost").split(",")[0].strip()
+            proto = "http" if host.startswith(("localhost", "127.0.0.1")) else "https"
+            try: out = wallet.start(f"{proto}://{host}", "void" if "scenario=void" in self.path else "happy")
+            except Exception as e: out = {"error": f"{type(e).__name__}: {str(e)[:200]}"}
             return self._send(200, json.dumps(out).encode(), "application/json")
         if self.path.startswith("/api/run"):
             self._send(200, json.dumps(flow.run_session(scenario=("void" if "scenario=void" in self.path else "happy"))).encode(), "application/json")
