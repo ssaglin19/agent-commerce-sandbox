@@ -4,6 +4,8 @@ Credentials come from env PAYPAL_CLIENT_ID / PAYPAL_CLIENT_SECRET (sandbox only)
 import base64, json, os, urllib.request, uuid
 
 BASE = "https://api-m.sandbox.paypal.com"
+_b = os.environ.get("HAGGLE_PAYPAL_BASE", "")
+if _b.startswith("http://127.0.0.1"): BASE = _b  # local fake PayPal for tests only; real hosts are never overridable
 
 class MockPayPal:
     mode = "mock"
@@ -11,6 +13,10 @@ class MockPayPal:
     def create_order(self, amount, desc):
         oid = "MOCK-" + uuid.uuid4().hex[:12].upper()
         self.orders[oid] = {"status": "CREATED", "amount": amount}; return oid
+    def create_approval_order(self, amount, desc, return_url, cancel_url):
+        """Buyer-wallet path. Mock: the approval link is the return link itself."""
+        oid = self.create_order(amount, desc)
+        return oid, return_url + ("&" if "?" in return_url else "?") + "token=" + oid
     def pay_with_test_card(self, amount, desc, **kw):
         oid = self.create_order(amount, desc); return oid, self.authorize(oid), "COMPLETED"
     def authorize(self, oid):
@@ -52,6 +58,15 @@ class SandboxPayPal:
         try: auth = r["purchase_units"][0]["payments"]["authorizations"][0]["id"]
         except (KeyError, IndexError): auth = None
         return r["id"], auth, r.get("status")
+    def create_approval_order(self, amount, desc, return_url, cancel_url):
+        """Buyer-wallet path: AUTHORIZE order the buyer approves in PayPal. Returns (order_id, approval_url)."""
+        r = self._req("/v2/checkout/orders", {"intent": "AUTHORIZE",
+            "purchase_units": [{"description": desc, "amount": {"currency_code": "USD", "value": f"{amount:.2f}"}}],
+            "payment_source": {"paypal": {"experience_context": {"user_action": "PAY_NOW", "shipping_preference": "NO_SHIPPING",
+                "return_url": return_url, "cancel_url": cancel_url}}}})
+        url = next((l["href"] for l in r.get("links", []) if l.get("rel") in ("payer-action", "approve")), None)
+        if not url: raise RuntimeError("PayPal returned no approval link")
+        return r["id"], url
     def authorize(self, oid):
         r = self._req(f"/v2/checkout/orders/{oid}/authorize", b"{}")
         return r["purchase_units"][0]["payments"]["authorizations"][0]["id"]
