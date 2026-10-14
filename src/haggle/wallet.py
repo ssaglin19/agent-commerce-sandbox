@@ -30,11 +30,13 @@ def finish(token, pp=None):
     deal, scenario = pend["deal"], pend["scenario"]
     chat = flow.SCENARIOS.get(scenario, flow.CHAT)
     out = {"mode": pp.mode, "ai": {"provider": llm.provider()}, "scenario": scenario, "item": deal.item, "turns": deal.turns,
-           "agreed": deal.agreed, "chat": chat, "steps": ["Buyer approved in PayPal"], "ids": {}, "path": "wallet"}
+           "agreed": deal.agreed, "chat": chat, "steps": ["Buyer approved in the PayPal sandbox" if pp.mode == "sandbox" else "Simulated buyer approval (mock mode, no PayPal involved)"], "ids": {}, "path": "wallet"}
     ai0 = llm.STATS["ok"]
     try:
         auth = pp.authorize(token)
         flow.settle(pp, out, deal.agreed, token, auth, flow.PEOPLE, chat, ai0)
     except Exception as e:
         out["error"] = f"{type(e).__name__}: {str(e)[:200]}"
+    if pp.mode != "sandbox":
+        out["steps"] = [x if x.startswith("Simulated") else "Simulated: " + x[0].lower() + x[1:] for x in out["steps"]]
     return out
