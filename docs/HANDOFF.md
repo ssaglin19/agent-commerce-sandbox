@@ -25,3 +25,13 @@ Google credits expire around Oct 27 and the Cloud account is paid. Before then:
 - Code: src/haggle/wallet.py, paypal.create_approval_order, /api/wallet/start, /wallet/return, /wallet/cancel, "Approve as buyer" button. Tests: tests/test_wallet.py (local fake PayPal server). 38 tests pass.
 - Verified locally with screenshots of the return page (capture and void paths) in mock mode. Not yet verified: real PayPal sandbox buyer approval (needs a Personal sandbox buyer and sandbox client keys on Render, owner decision pending) and live webhook delivery.
 - UPDATE Oct 15 5:53pm CDT: status.render.com showed Builds and Deploys Operational, one manual deploy succeeded, the wallet path and "Approve as buyer" button are live on https://haggle-court.onrender.com (mock mode, Simulated step wording verified in the browser). Earlier history: manual deploy returned "Deploy Error: Service Unavailable" on Oct 14 4:43-4:44pm CDT while https://status.render.com showed Builds and Deploys degraded (fix being monitored since 19:45 UTC). That Oct 14 attempt failed and the later Oct 15 deploy superseded it. Real PayPal sandbox buyer approval and live webhook delivery remain unverified.
+
+## Remaining work to submission (status Oct 17, 2026)
+Not submission-ready today. Three buckets:
+1. Scheduled cleanup (agent, no owner input needed): the Oct 26 key removal above, plus a final check around Nov 5 (fresh-clone tests, end-to-end demo pass, DEVPOST text refresh, video link). About 1-2 hours total.
+2. Real PayPal sandbox integration verification (gated on the owner's hosted-credentials decision): switch the demo from mock to real sandbox, run the buyer approval end to end, register and verify the live webhook. Roughly 1.5-2.5 hours on the happy path once credentials exist. This path has never run against real PayPal, so if a test fails there is no fixed estimate; debugging is open-ended until the first failure is seen.
+3. Owner access/approval gates: the Devpost sign-in identity, the hosted sandbox credentials decision, and the owner's final review of the video and entry before upload and submission. Emailing the video is an optional delivery choice, not a blocker.
+
+Rules risk of mock-only: the rules require an app that integrates the PayPal developer platform using the free sandbox environment, and Stage One is pass/fail on reasonably applying the required APIs/SDKs. The integration code has only run against a local fake, so mock-only cannot be called compliant. Do not claim readiness until bucket 2 passes.
+
+Video accuracy: the 149 s cut records the mock (Simulated) flow. If the verified real sandbox flow differs materially, the video package needs an accuracy review before submission.
