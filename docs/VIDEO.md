@@ -16,7 +16,9 @@ Record Haggle Court and group purchases as one submission. Never show credential
 ## Recording gates
 - Dry-run all four scenarios before recording. No automatic retries of settlement requests.
 - Mock mode is a valid rehearsal, but label it mock throughout. Do not narrate mock IDs as live sandbox evidence.
-- Use a verified sandbox configuration for the final sandbox recording. Public Render remains mock until sandbox keys are approved and installed there.
+- Use a verified sandbox configuration for the final sandbox recording. The hosted demo has run the real PayPal sandbox since Oct 18, 2026 (owner-approved sandbox keys on Render; verified IDs in HANDOFF.md).
 - Keep the mode notice and SIMULATED labels visible. Participant approvals in the canned demo are not real human authentication.
 - Live webhook delivery is not verified yet. Do not claim webhook-driven settlement.
+- Banter wording must be true on recording day: with the Google key on Render the banter is Gemini-written; after the planned Oct 26 key removal it is scripted.
+- ACCURACY (Oct 18, 2026): the Oct 7 rehearsal cut (rehearsal-live-ai-v2.mp4, about 149 s) shows the MOCK flow. The hosted demo now runs the real sandbox, so the final video should either be re-recorded against the live sandbox flow (matches what judges will open) or keep the mock cut only with explicit mock labeling and caption per the truthful route in HANDOFF.md. Owner decides before upload.
 - Upload/publish only after the final video and its audience have been reviewed. No video link exists yet.
