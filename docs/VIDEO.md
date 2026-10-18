@@ -20,5 +20,5 @@ Record Haggle Court and group purchases as one submission. Never show credential
 - Keep the mode notice and SIMULATED labels visible. Participant approvals in the canned demo are not real human authentication.
 - Live webhook delivery is not verified yet. Do not claim webhook-driven settlement.
 - Banter wording must be true on recording day: with the Google key on Render the banter is Gemini-written; after the planned Oct 26 key removal it is scripted.
-- ACCURACY (Oct 18, 2026): the Oct 7 rehearsal cut (rehearsal-live-ai-v2.mp4, about 149 s) shows the MOCK flow. The hosted demo now runs the real sandbox, so the final video should either be re-recorded against the live sandbox flow (matches what judges will open) or keep the mock cut only with explicit mock labeling and caption per the truthful route in HANDOFF.md. Owner decides before upload.
+- ACCURACY (Oct 18, 2026): the Oct 7 rehearsal cut shows the MOCK flow and the hosted demo now runs the real sandbox. A private revision (rehearsal-mock-v2-accuracy.mp4, 2:54) adds an intro card stating that plainly, so the mock-labeled package is truthful as it stands; re-recording against the live sandbox flow remains the other option. Owner reviews and decides before any upload; no video link exists yet.
 - Upload/publish only after the final video and its audience have been reviewed. No video link exists yet.
