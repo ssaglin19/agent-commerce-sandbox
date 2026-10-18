@@ -15,7 +15,10 @@ Google credits expire around Oct 27 and the Cloud account is paid. Before then:
 3. Keep the owner informed. Keep the key only if the owner says so.
 
 ## Submission checklist (from the rules)
-1. Video length must be under 3 minutes. Current cut: rehearsal-live-ai-v2.mp4, about 149 s. Re-check length after any edit.
+1. Video length must be under 3 minutes. Current footage, all mock-labeled and private (nothing uploaded, no video link exists):
+   - rehearsal-mock-paypal-colors.mp4 (2:50, Oct 7): latest Oct 7 cut, every frame badged MOCK REHEARSAL, narration.txt alongside. Recovered Oct 18 from the owner's own Gmail (Oct 7 sent message) after the local copy was lost.
+   - rehearsal-mock-v2-accuracy.mp4 (2:54, built Oct 18): the same cut plus a 4-second intro card stating it was recorded Oct 7 in mock mode and that the live demo has run the real sandbox since Oct 18. narration-v2.txt prepends the matching line. Held privately with the main agent; the owner has not reviewed it.
+   Neither is a public-ready package: the footage is silent and the narration is a separate script, the owner has not reviewed any cut, and YouTube upload (public, required by the rules) stays owner-gated. Re-check length after any edit.
 2. Project must stay testable through Dec 15, 2026, but the key is removed Oct 26. The video shows live AI. Truthful route, no extra spend by default:
    - Devpost text and video caption say the video was recorded Oct 7 with live Gemini, and the public demo falls back to scripted lines when no key is configured.
    - README has "Try the live AI role yourself": judges run locally with their own key. No public secrets.
@@ -42,4 +45,4 @@ Not submission-ready today. Three buckets:
 
 Rules risk: the hosted demo now runs the real sandbox end to end (verified Oct 18), so the integration requirement is covered. Remaining gaps before claiming full readiness: the buyer approval flow has only run against a local fake, and live webhook delivery is unverified. Do not claim full readiness until those pass.
 
-Video accuracy: the 149 s cut records the mock (Simulated) flow. The hosted demo now runs the real sandbox, so the video package needs an accuracy review before submission.
+Video accuracy: the Oct 7 cuts record the mock (Simulated) flow, and the hosted demo now runs the real sandbox. The Oct 18 revision adds an intro card stating exactly that, so the mock-labeled package is truthful as it stands; re-recording against the live sandbox flow remains the owner's other option.
