@@ -4,7 +4,7 @@
 Haggle Court
 
 ## Tagline
-Two heckling bots haggle the price. The demo simulates approvals for exact shares. PayPal holds the money, and the group either buys or unwinds cleanly.
+Two heckling bots haggle the price. PayPal holds the money, a judge splits it, and the group either buys or unwinds cleanly.
 
 ## Inspiration
 Group buys die in the group chat. Everyone argues about price, half the group drops out, and nobody ever pays. We wanted the argument and the money to live in one place, and wanted it to be funny.
@@ -20,13 +20,13 @@ Statler (buyer bot) and Waldorf (seller bot) haggle the price of a group buy, tr
 Pool turns the agreed price into a group-funded purchase. Participant agents review the terms, but only a human approval tied to the exact terms counts, and any change clears all approvals. The coordinator holds each person's share through PayPal, asks for a final approval, captures, buys, and requests remainder payouts through Payouts. In the failure demo one capture fails: the coordinator stops, records the partial result, requests refunds for successful captures and voids the other holds, and never claims everyone paid. Payout or compensation failures remain pending for follow-up. Venmo is shown as a labeled simulation because its sandbox has no hold step.
 
 ## How we built it
-Python standard library, no framework. A negotiation loop for the two bots, a rule-based judge that reads the order and chat (optionally Gemini on Vertex AI writes the banter and suggests judge weights; code computes all money and falls back to scripted on any error), a PayPal client with a real sandbox implementation and a mock with the same interface, a small HTTP server and one-page UI, and a signature-checking webhook receiver. Live webhook delivery remains unverified. PayPal APIs: OAuth2, Orders v2 (create, authorize, capture), Payments v2 (void, refund), and Payouts. The coordinator is an explicit state machine with an event log that deduplicates log keys (not a durable transaction retry ledger). 31 unit tests run in mock mode. The AI role is limited on purpose: the model only writes banter and suggests judge weights. Prices, shares, captures and voids are computed by code, so a model error can never move money. Merchant purchase and participant approvals are simulated in the demo.
+Python standard library, no framework. A negotiation loop for the two bots, a rule-based judge that reads the order and chat (optionally Gemini on Vertex AI writes the banter and suggests judge weights; code computes all money and falls back to scripted on any error), a PayPal client with a real sandbox implementation and a mock with the same interface, a small HTTP server and one-page UI, and a signature-checking webhook receiver. Live webhook delivery is registered but delivery remains to be verified. PayPal APIs: OAuth2, Orders v2 (create, authorize, capture), Payments v2 (void, refund), and Payouts. The coordinator is an explicit state machine with an event log that deduplicates log keys (not a durable transaction retry ledger). 38 unit tests run in mock mode. The AI role is limited on purpose: the model only writes banter and suggests judge weights. Prices, shares, captures and voids are computed by code, so a model error can never move money. Merchant purchase and participant approvals are simulated in the demo.
 
 ## Who it is for
 Friend groups, roommates, clubs and teams who split big purchases and lose weeks to the argument and the chasing. The pain is real: someone fronts the cash, half the group drops out, and nobody gets reimbursed. Authorize-then-decide means nobody is charged until the group is in, and a clean void when it is not.
 
 ## How judges can test
-- Open https://haggle-court.onrender.com (free tier, allow about 15 seconds to wake). Click "Open court" for the success path and "Group bails out" for the void path. The Pool page shows the group purchase and the failure rollback.
+- Open https://haggle-court.onrender.com (free tier, allow about 15 seconds to wake). It runs against the PayPal sandbox: click "Open court" for the success path (real sandbox authorize, capture and payout IDs shown) and "Group bails out" for the void path. The Pool page shows the group purchase and the failure rollback.
 - Or run locally with no keys: `PYTHONPATH=src python3 -m unittest discover -s tests` then `PYTHONPATH=src python3 -m haggle.server` and open http://localhost:8000. Mock PayPal mode is the default.
 - No credentials are needed. The live Gemini role needs your own Google key (see README).
 
@@ -34,13 +34,13 @@ Friend groups, roommates, clubs and teams who split big purchases and lose weeks
 A plain Orders authorize needs buyer approval in a browser, which breaks an automated agent flow. In the sandbox we use a test card payment source so the hold happens without a login, and we kept the approval step as the real-world path.
 
 ## Accomplishments
-A full hold, judge, capture or void, payout cycle running against the live PayPal sandbox with real IDs, and a void path that leaves no charge.
+A full hold, judge, capture or void, payout cycle running against the live PayPal sandbox with real IDs, and a void path that leaves no charge. The hosted demo runs this against the real sandbox: verified Oct 18, 2026 with a live authorize, capture and payout batch on the success path and a live authorize and void on the bail-out path.
 
 ## What we learned
 Authorize-then-decide fits agent commerce well: an agent can commit to a price without moving money until a second agent signs off.
 
 ## What's next
-Buyer wallet approval step, webhook-driven status updates, and multi-seller bidding.
+Verifying the buyer wallet approval step end to end (the flow is built and needs a Personal sandbox buyer to exercise it), webhook-driven status updates, and multi-seller bidding.
 
 ## Built with
 Python, PayPal Orders v2, PayPal Payments v2, PayPal Payouts, PayPal webhooks
