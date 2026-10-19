@@ -181,3 +181,59 @@ def extract_case(receipt_text, chat_lines):
     chat_text = "\n".join(chat_lines)
     state = f"RECEIPT:\n{receipt_text}\n\nGROUP CHAT:\n{chat_text}"
     return extract(state, dict(RECEIPT_FIELDS, **CHAT_FIELDS))
+
+
+def select_fields(chat_lines):
+    """Scalar per-message statement selection: one text field per message, no category labels.
+
+    Oct 19 stage after dissection: Clairic picks WHAT each speaker explicitly said
+    about paying, usage, price or the agreement; labeling and weighing stay with the judge.
+    Categories steered the model into over-labeling, so this schema asks only for the
+    statement itself, verbatim, or null."""
+    fields = dict(RECEIPT_FIELDS)
+    for i in range(len(chat_lines)):
+        fields[f"msg_{i}_statement"] = {"type": "text", "instructions":
+            f"In message [{i}] of the group chat, quote the exact words where the speaker states "
+            "what they will pay, how much they will use the item, or what the price or agreement "
+            "is, or null if the message states none of these"}
+    return fields
+
+
+def _mock_select(chat_lines):
+    """Deterministic relevance pick with the select output shape, for offline tests."""
+    pat = (r"(i'm out|not paying|count me out|every day|using it most|i'll hog|daily|i'm in|"
+           r"i'll pay|put me down|my share|already paid|i paid for|i've paid|paid for everyone|"
+           r"never agreed|didn't agree|wrong price|was \$|should be \$|we agreed \$|dispute|"
+           r"sip|weekends|the price|the total)")
+    return [{"message_index": i, "speaker": line.split(":", 1)[0].strip(),
+             "source_line": line, "quote": line, "confidence": 1.0}
+            for i, line in enumerate(chat_lines) if re.search(pat, line, re.IGNORECASE)]
+
+
+def select_case(receipt_text, chat_lines):
+    """One bounded call: receipt scalars plus per-message statement selection, no labels.
+
+    Statements keep the full source line attached by code; the model's quote must pass the
+    same verbatim gate as dissection. A selected statement is what a speaker SAID, not a
+    fact: contradictions and overclaims stay attributed to their speaker for the judge.
+    Returns raw per-field answers alongside so persisted fixtures keep the model's output."""
+    numbered = "\n".join(f"[{i}] {line}" for i, line in enumerate(chat_lines))
+    state = f"RECEIPT:\n{receipt_text}\n\nGROUP CHAT:\n{numbered}"
+    live = bool(os.environ.get("CLOUDFLARE_ACCOUNT_ID") and os.environ.get("CLOUDFLARE_API_TOKEN"))
+    if not live:
+        mock_ans = _mock(state, RECEIPT_FIELDS)
+        return {"source": "mock", "model": None,
+                "receipt": {k: mock_ans.get(k) for k in RECEIPT_FIELDS},
+                "statements": _mock_select(chat_lines), "raw_answers": mock_ans}
+    out = extract(state, select_fields(chat_lines))
+    receipt = {k: out["answers"].get(k) for k in RECEIPT_FIELDS}
+    statements = []
+    for i, line in enumerate(chat_lines):
+        a = out["answers"].get(f"msg_{i}_statement") or {}
+        q = (a.get("value") or "").strip()
+        speaker = line.split(":", 1)[0].strip()
+        if q and len(q) >= _MIN_QUOTE and q in line and q.rstrip(": ").strip() != speaker:
+            statements.append({"message_index": i, "speaker": speaker, "source_line": line,
+                               "quote": q, "confidence": a.get("confidence")})
+    return {"source": out["source"], "model": out.get("model"), "receipt": receipt,
+            "statements": statements, "raw_answers": out["answers"]}
