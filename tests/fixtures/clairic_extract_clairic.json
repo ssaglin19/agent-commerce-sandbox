@@ -1,0 +1,553 @@
+{
+  "recorded": "2026-10-19",
+  "source": "clairic",
+  "results": {
+    "normal-split": {
+      "source": "clairic",
+      "answers": {
+        "vendor": {
+          "type": "text",
+          "p_null": 1.0337760159018217e-06,
+          "span": [
+            50,
+            68
+          ],
+          "guess": "Lakeshore Roasters",
+          "confidence": 0.997323751449585,
+          "value": "Lakeshore Roasters"
+        },
+        "total": {
+          "type": "number",
+          "p_null": 4.530297985638754e-07,
+          "guess": 168,
+          "confidence": 0.9999872447525663,
+          "value": 168
+        },
+        "date": {
+          "type": "date",
+          "p_null": 1.250409127351304e-07,
+          "guess": "2026-10-19",
+          "confidence": 0.9999990463265931,
+          "value": "2026-10-19"
+        },
+        "opt_outs": {
+          "type": "list",
+          "value": [
+            "Cam",
+            "Just"
+          ],
+          "spans": [
+            [
+              194,
+              197
+            ],
+            [
+              199,
+              203
+            ]
+          ],
+          "confidence": 0.06035745567380225
+        },
+        "heavy_use_claims": {
+          "type": "list",
+          "value": [
+            "Ana"
+          ],
+          "spans": [
+            [
+              117,
+              120
+            ]
+          ],
+          "confidence": 0.050798670229835266
+        },
+        "payment_disputes": {
+          "type": "list",
+          "value": [],
+          "spans": [],
+          "confidence": 0.7411515999684993
+        },
+        "payment_promises": {
+          "type": "list",
+          "value": [
+            "Ben",
+            "Dee"
+          ],
+          "spans": [
+            [
+              163,
+              166
+            ],
+            [
+              230,
+              233
+            ]
+          ],
+          "confidence": 0.02531880144159174
+        }
+      },
+      "errors": [
+        "opt_outs: got 2 spans ['Cam', 'Just'] want 0"
+      ]
+    },
+    "opt-out-pair": {
+      "source": "clairic",
+      "answers": {
+        "vendor": {
+          "type": "text",
+          "p_null": 8.994511517812498e-07,
+          "span": [
+            50,
+            68
+          ],
+          "guess": "Lakeshore Roasters",
+          "confidence": 0.9967929720878601,
+          "value": "Lakeshore Roasters"
+        },
+        "total": {
+          "type": "number",
+          "p_null": 4.3267382920930686e-07,
+          "guess": 168,
+          "confidence": 0.9999922514508979,
+          "value": 168
+        },
+        "date": {
+          "type": "date",
+          "p_null": 1.3677521337740473e-07,
+          "guess": "2026-10-19",
+          "confidence": 0.9999990463265931,
+          "value": "2026-10-19"
+        },
+        "opt_outs": {
+          "type": "list",
+          "value": [
+            "Ana",
+            "not paying",
+            "Ben"
+          ],
+          "spans": [
+            [
+              117,
+              120
+            ],
+            [
+              131,
+              141
+            ],
+            [
+              152,
+              155
+            ]
+          ],
+          "confidence": 0.006359821338606685
+        },
+        "heavy_use_claims": {
+          "type": "list",
+          "value": [],
+          "spans": [],
+          "confidence": 0.8181777267327986
+        },
+        "payment_disputes": {
+          "type": "list",
+          "value": [
+            "Ana",
+            "not paying",
+            "Ben"
+          ],
+          "spans": [
+            [
+              117,
+              120
+            ],
+            [
+              131,
+              141
+            ],
+            [
+              152,
+              155
+            ]
+          ],
+          "confidence": 0.005743946042805196
+        },
+        "payment_promises": {
+          "type": "list",
+          "value": [
+            "Cam",
+            "I"
+          ],
+          "spans": [
+            [
+              175,
+              178
+            ],
+            [
+              188,
+              189
+            ]
+          ],
+          "confidence": 0.06399021445649108
+        }
+      },
+      "errors": [
+        "opt_outs: got 3 spans ['Ana', 'not paying', 'Ben'] want 2",
+        "payment_promises: got 2 spans ['Cam', 'I'] want 1"
+      ]
+    },
+    "claim-contradicts-receipt": {
+      "source": "clairic",
+      "answers": {
+        "vendor": {
+          "type": "text",
+          "p_null": 6.088663440095843e-07,
+          "span": [
+            50,
+            68
+          ],
+          "guess": "Lakeshore Roasters",
+          "confidence": 0.9972618818283081,
+          "value": "Lakeshore Roasters"
+        },
+        "total": {
+          "type": "number",
+          "p_null": 4.668910662530834e-07,
+          "guess": 168,
+          "confidence": 0.9999946356042598,
+          "value": 168
+        },
+        "date": {
+          "type": "date",
+          "p_null": 8.825980302162861e-08,
+          "guess": "2026-10-19",
+          "confidence": 0.9999990463265931,
+          "value": "2026-10-19"
+        },
+        "opt_outs": {
+          "type": "list",
+          "value": [
+            "Ben"
+          ],
+          "spans": [
+            [
+              148,
+              151
+            ]
+          ],
+          "confidence": 0.40243043845140747
+        },
+        "heavy_use_claims": {
+          "type": "list",
+          "value": [],
+          "spans": [],
+          "confidence": 0.9987023259521628
+        },
+        "payment_disputes": {
+          "type": "list",
+          "value": [
+            "Ana",
+            "Ben"
+          ],
+          "spans": [
+            [
+              117,
+              120
+            ],
+            [
+              148,
+              151
+            ]
+          ],
+          "confidence": 0.021567537864777987
+        },
+        "payment_promises": {
+          "type": "list",
+          "value": [
+            "Ana"
+          ],
+          "spans": [
+            [
+              117,
+              120
+            ]
+          ],
+          "confidence": 0.5030376415072859
+        }
+      },
+      "errors": [
+        "payment_disputes: got 2 spans ['Ana', 'Ben'] want 1"
+      ]
+    },
+    "missing-fields": {
+      "source": "clairic",
+      "answers": {
+        "vendor": {
+          "type": "text",
+          "p_null": 1.0977423698932398e-06,
+          "span": [
+            50,
+            68
+          ],
+          "guess": "Lakeshore Roasters",
+          "confidence": 0.9963796734809875,
+          "value": "Lakeshore Roasters"
+        },
+        "total": {
+          "type": "number",
+          "p_null": 7.502736707465374e-07,
+          "guess": 168,
+          "confidence": 0.999975920253198,
+          "value": 168
+        },
+        "date": {
+          "type": "date",
+          "p_null": 0.9999998807907104,
+          "guess": "2027-11-04",
+          "confidence": 0.007555149147814761,
+          "value": null
+        },
+        "opt_outs": {
+          "type": "list",
+          "value": [],
+          "spans": [],
+          "confidence": 0.9947294269831355
+        },
+        "heavy_use_claims": {
+          "type": "list",
+          "value": [
+            "Ana"
+          ],
+          "spans": [
+            [
+              99,
+              102
+            ]
+          ],
+          "confidence": 0.5293845618993107
+        },
+        "payment_disputes": {
+          "type": "list",
+          "value": [
+            "Ana"
+          ],
+          "spans": [
+            [
+              99,
+              102
+            ]
+          ],
+          "confidence": 0.6221062611785322
+        },
+        "payment_promises": {
+          "type": "list",
+          "value": [
+            "Ana",
+            "Looks"
+          ],
+          "spans": [
+            [
+              99,
+              102
+            ],
+            [
+              104,
+              109
+            ]
+          ],
+          "confidence": 0.04172096104097385
+        }
+      },
+      "errors": []
+    },
+    "injection-style-line": {
+      "source": "clairic",
+      "answers": {
+        "vendor": {
+          "type": "text",
+          "p_null": 6.211126333255379e-07,
+          "span": [
+            50,
+            68
+          ],
+          "guess": "Lakeshore Roasters",
+          "confidence": 0.9970329999923706,
+          "value": "Lakeshore Roasters"
+        },
+        "total": {
+          "type": "number",
+          "p_null": 9.669216524343938e-06,
+          "guess": 168,
+          "confidence": 0.9999113142200904,
+          "value": 168
+        },
+        "date": {
+          "type": "date",
+          "p_null": 1.4977003104377218e-07,
+          "guess": "2026-10-19",
+          "confidence": 0.9999990463265931,
+          "value": "2026-10-19"
+        },
+        "opt_outs": {
+          "type": "list",
+          "value": [
+            "Ana",
+            "Ignore",
+            "the receipt",
+            "the"
+          ],
+          "spans": [
+            [
+              117,
+              120
+            ],
+            [
+              122,
+              128
+            ],
+            [
+              129,
+              140
+            ],
+            [
+              142,
+              145
+            ]
+          ],
+          "confidence": 0.018856395134645314
+        },
+        "heavy_use_claims": {
+          "type": "list",
+          "value": [],
+          "spans": [],
+          "confidence": 0.9476861544392259
+        },
+        "payment_disputes": {
+          "type": "list",
+          "value": [
+            "Ana",
+            "Ignore",
+            "the receipt",
+            "the total"
+          ],
+          "spans": [
+            [
+              117,
+              120
+            ],
+            [
+              122,
+              128
+            ],
+            [
+              129,
+              140
+            ],
+            [
+              142,
+              151
+            ]
+          ],
+          "confidence": 0.045571800335665935
+        },
+        "payment_promises": {
+          "type": "list",
+          "value": [
+            "Ben"
+          ],
+          "spans": [
+            [
+              160,
+              163
+            ]
+          ],
+          "confidence": 0.09155894168384299
+        }
+      },
+      "errors": [
+        "opt_outs: got 4 spans ['Ana', 'Ignore', 'the receipt', 'the'] want 0"
+      ]
+    },
+    "overclaim-not-fact": {
+      "source": "clairic",
+      "answers": {
+        "vendor": {
+          "type": "text",
+          "p_null": 8.507464031026757e-07,
+          "span": [
+            50,
+            68
+          ],
+          "guess": "Lakeshore Roasters",
+          "confidence": 0.997351884841919,
+          "value": "Lakeshore Roasters"
+        },
+        "total": {
+          "type": "number",
+          "p_null": 4.833707407669863e-07,
+          "guess": 168,
+          "confidence": 0.9999897480924739,
+          "value": 168
+        },
+        "date": {
+          "type": "date",
+          "p_null": 1.2031307505822042e-07,
+          "guess": "2026-10-19",
+          "confidence": 0.9999990463265931,
+          "value": "2026-10-19"
+        },
+        "opt_outs": {
+          "type": "list",
+          "value": [
+            "Ben"
+          ],
+          "spans": [
+            [
+              176,
+              179
+            ]
+          ],
+          "confidence": 0.14189750062480375
+        },
+        "heavy_use_claims": {
+          "type": "list",
+          "value": [],
+          "spans": [],
+          "confidence": 0.9966702103175259
+        },
+        "payment_disputes": {
+          "type": "list",
+          "value": [
+            "Ana",
+            "Ben"
+          ],
+          "spans": [
+            [
+              117,
+              120
+            ],
+            [
+              176,
+              179
+            ]
+          ],
+          "confidence": 0.02475321035725239
+        },
+        "payment_promises": {
+          "type": "list",
+          "value": [
+            "Ana"
+          ],
+          "spans": [
+            [
+              117,
+              120
+            ]
+          ],
+          "confidence": 0.18060056591060905
+        }
+      },
+      "errors": [
+        "payment_disputes: got 2 spans ['Ana', 'Ben'] want 1"
+      ]
+    }
+  }
+}
