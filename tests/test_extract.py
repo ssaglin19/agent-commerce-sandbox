@@ -46,3 +46,45 @@ class ExtractMockTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+class DissectTests(unittest.TestCase):
+    def setUp(self):
+        os.environ.pop("CLOUDFLARE_ACCOUNT_ID", None); os.environ.pop("CLOUDFLARE_API_TOKEN", None)
+
+    def test_dissect_fields_shape(self):
+        f = extract.dissect_fields(["Ana: hi", "Ben: yo"])
+        self.assertIn("vendor", f)
+        for i in (0, 1):
+            for cat in extract.CLAIM_CATEGORIES:
+                self.assertIn(f"msg_{i}_{cat}", f)
+                self.assertEqual(f[f"msg_{i}_{cat}"]["type"], "text")
+
+    def test_dissect_mock_attaches_full_source_line(self):
+        out = extract.dissect_case(RECEIPT, ["Ana: I'm out, not paying for this.", "Ben: I'll pay my share."])
+        self.assertEqual(out["source"], "mock")
+        cats = {(c["message_index"], c["category"]) for c in out["claims"]}
+        self.assertEqual(cats, {(0, "opt_out"), (1, "promise")})
+        for c in out["claims"]:
+            self.assertEqual(c["source_line"], ["Ana: I'm out, not paying for this.", "Ben: I'll pay my share."][c["message_index"]])
+
+    def test_dissect_gate_drops_fragments(self):
+        os.environ["CLOUDFLARE_ACCOUNT_ID"] = "x"; os.environ["CLOUDFLARE_API_TOKEN"] = "x"
+        chat = ["Ana: I'm out, not paying for this.", "Ben: Looks right to me."]
+        fake = {"source": "clairic", "model": extract.MODEL, "answers": {
+            "msg_0_opt_out": {"value": "I", "confidence": 0.02},                    # fragment: dropped
+            "msg_0_promise": {"value": "I'm out", "confidence": 0.30},              # verbatim but wrong category: kept (gate is presence, not truth)
+            "msg_1_dispute": {"value": "hallucinated quote", "confidence": 0.60},   # not in message: dropped
+        }}
+        orig = extract.extract
+        extract.extract = lambda state, fields: fake
+        try:
+            out = extract.dissect_case(RECEIPT, chat)
+        finally:
+            extract.extract = orig
+        cats = {(c["message_index"], c["category"]) for c in out["claims"]}
+        self.assertEqual(cats, {(0, "promise")})
+        self.assertEqual(out["claims"][0]["source_line"], chat[0])
+
+    def test_dissect_no_forbidden_keys(self):
+        out = extract.dissect_case(RECEIPT, ["Ana: I'm in."])
+        self.assertFalse(set(out["raw_answers"]) & extract.FORBIDDEN_KEYS)
