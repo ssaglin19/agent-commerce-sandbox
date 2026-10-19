@@ -1,5 +1,8 @@
 """End-to-end court session: haggle -> hold -> judge -> capture or void -> splits."""
-from . import negotiation, judge, paypal, llm
+import datetime
+from . import negotiation, judge, paypal, llm, extract
+
+RECEIPT_VENDOR = "Lakeshore Coffee Supply"
 
 PEOPLE = ["Ana", "Ben", "Cam", "Dee"]
 CHAT = [{"who": "Ana", "text": "I'll use the espresso machine every day"},
@@ -51,6 +54,33 @@ def settle(pp, out, agreed, oid, auth, people, chat, ai0=0):
         pp.void(auth); out["steps"].append("Court voided the hold. Nobody pays."); out["payouts"] = []
         return out
     cap = pp.capture(auth); out["ids"]["capture"] = cap; out["steps"].append(f"Captured {cap}")
+    read_receipt(out, agreed)
     out["payouts"] = pp.payout([{"to": f"{p.lower()}@example.com", "amount": a} for p, a in ruling["shares"].items()])
     out["steps"].append("Split payout requests submitted; delivery is not confirmed")
     return out
+
+def read_receipt(out, agreed):
+    """Read the merchant receipt back as evidence after capture.
+
+    Clairic (receipt fields only, its validated role) when CLOUDFLARE_ACCOUNT_ID and
+    CLOUDFLARE_API_TOKEN are set, otherwise the local parser; the source is shown. This is
+    evidence, not money: the captured amount stays the amount of record, the judge still
+    reads the full chat, and a mismatch only adds a warning line."""
+    text = (f"Receipt from {RECEIPT_VENDOR}. Seller: {RECEIPT_VENDOR}. "
+            f"Total: ${agreed:.2f}. Date: {datetime.date.today().isoformat()}.")
+    try:
+        r = extract.extract(text, dict(extract.RECEIPT_FIELDS))
+    except extract.ExtractUnavailable as e:
+        out["steps"].append(f"Receipt read skipped ({e}); the captured amount is unaffected.")
+        return
+    a = r["answers"]
+    facts = {"vendor": (a.get("vendor") or {}).get("value"),
+             "total": (a.get("total") or {}).get("value"),
+             "date": (a.get("date") or {}).get("value"),
+             "source": r["source"]}
+    facts["matches_capture"] = facts["total"] == round(agreed, 2)
+    out["receipt_facts"] = facts
+    label = "Clairic" if r["source"] == "clairic" else "local parser"
+    total = f"${facts['total']:.2f}" if isinstance(facts["total"], (int, float)) else "unknown total"
+    note = "matches the captured amount" if facts["matches_capture"] else "MISMATCH vs the captured amount (captured amount stands)"
+    out["steps"].append(f"Receipt read ({label}): {facts['vendor']}, {total}, {facts['date']} - {note}.")
