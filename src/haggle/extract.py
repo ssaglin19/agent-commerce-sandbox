@@ -97,6 +97,85 @@ def extract(state, fields):
     clean = {k: v for k, v in ans.items() if k not in FORBIDDEN_KEYS}
     return {"source": src, "model": MODEL if src == "clairic" else None, "answers": clean}
 
+CLAIM_CATEGORIES = ("opt_out", "heavy_use", "promise", "paid_claim", "dispute")
+_DISSECT_INSTR = {
+    "opt_out": "In message [{i}] of the group chat, quote the exact words where the speaker declines to pay or leaves the purchase, or null",
+    "heavy_use": "In message [{i}] of the group chat, quote the exact words where the speaker claims they will use the item a lot, or null",
+    "promise": "In message [{i}] of the group chat, quote the exact words where the speaker commits to pay their share, or null",
+    "paid_claim": "In message [{i}] of the group chat, quote the exact words where the speaker claims they already paid, or null",
+    "dispute": "In message [{i}] of the group chat, quote the exact words where the speaker disputes the price, the charge, or the agreement, or null",
+}
+# Presence gate: the model's value is only a presence signal. It counts only when it is a
+# verbatim substring of that same message and at least _MIN_QUOTE chars (fragments like a
+# speaker name or "I" were the Oct 19 whole-chat list failure mode). The claim record always
+# carries the full source line attached by code; the model's quote is kept for audit, never
+# used as evidence. A miscategorized but verbatim substring can still pass the gate: the gate
+# reduces false positives, it does not prove categorization. Categories are not mutually
+# exclusive; one message can carry several claims.
+_MIN_QUOTE = 4
+
+
+def dissect_fields(chat_lines):
+    """Scalar per-message claim fields: one text field per message per claim category.
+
+    Whole-chat list extraction failed on Oct 19 (fragment spans, wrong membership), so claims
+    are asked one message at a time inside the same single call. Receipt scalars were correct
+    18/18 in that run; that says nothing about categorical claim detection, which this shape
+    still has to prove against the same six cases."""
+    fields = dict(RECEIPT_FIELDS)
+    for i in range(len(chat_lines)):
+        for cat in CLAIM_CATEGORIES:
+            fields[f"msg_{i}_{cat}"] = {"type": "text", "instructions": _DISSECT_INSTR[cat].format(i=i)}
+    return fields
+
+
+def _mock_dissect(chat_lines):
+    """Deterministic per-message classifier with the dissect output shape, for offline tests."""
+    pats = {
+        "opt_out": r"(i'm out|not paying|count me out)",
+        "heavy_use": r"(every day|using it most|i'll hog|daily)",
+        "promise": r"(i'm in|i'll pay|put me down|my share)",
+        "paid_claim": r"(already paid|i paid for|i've paid|paid for everyone)",
+        "dispute": r"(never agreed|didn't agree|wrong price|was \$|should be \$|we agreed \$|dispute)",
+    }
+    claims = []
+    for i, line in enumerate(chat_lines):
+        for cat, pat in pats.items():
+            if re.search(pat, line, re.IGNORECASE):
+                claims.append({"message_index": i, "speaker": line.split(":", 1)[0].strip(),
+                               "category": cat, "source_line": line, "quote": line, "confidence": 1.0})
+    return claims
+
+
+def dissect_case(receipt_text, chat_lines):
+    """One bounded call: receipt scalars plus per-message claim detection with a verbatim gate.
+
+    Output: receipt fields, and claims with the full source line attached by code. Claims are
+    evidence for the judge, not verdicts; contradictions stay attached to their source message.
+    Returns raw per-field answers alongside so persisted fixtures keep the model's own output."""
+    numbered = "\n".join(f"[{i}] {line}" for i, line in enumerate(chat_lines))
+    state = f"RECEIPT:\n{receipt_text}\n\nGROUP CHAT:\n{numbered}"
+    live = bool(os.environ.get("CLOUDFLARE_ACCOUNT_ID") and os.environ.get("CLOUDFLARE_API_TOKEN"))
+    if not live:
+        mock_ans = _mock(state, RECEIPT_FIELDS)
+        return {"source": "mock", "model": None,
+                "receipt": {k: mock_ans.get(k) for k in RECEIPT_FIELDS},
+                "claims": _mock_dissect(chat_lines), "raw_answers": mock_ans}
+    out = extract(state, dissect_fields(chat_lines))
+    receipt = {k: out["answers"].get(k) for k in RECEIPT_FIELDS}
+    claims = []
+    for i, line in enumerate(chat_lines):
+        speaker = line.split(":", 1)[0].strip()
+        for cat in CLAIM_CATEGORIES:
+            a = out["answers"].get(f"msg_{i}_{cat}") or {}
+            q = (a.get("value") or "").strip()
+            if q and len(q) >= _MIN_QUOTE and q in line and q.rstrip(": ").strip() != speaker:
+                claims.append({"message_index": i, "speaker": speaker, "category": cat,
+                               "source_line": line, "quote": q, "confidence": a.get("confidence")})
+    return {"source": out["source"], "model": out.get("model"), "receipt": receipt,
+            "claims": claims, "raw_answers": out["answers"]}
+
+
 def extract_case(receipt_text, chat_lines):
     """One bounded call covering receipt fields and chat claims for a single case."""
     chat_text = "\n".join(chat_lines)
