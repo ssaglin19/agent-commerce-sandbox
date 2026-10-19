@@ -50,3 +50,43 @@ class WebhookSafety(unittest.TestCase):
         class Sandbox:mode='sandbox'
         with patch.object(webhook.paypal,'client',return_value=Sandbox()),patch.dict(os.environ,{},clear=True):
             self.assertFalse(webhook.handle(b'{"id":"WH-3","event_type":"x"}',{}))
+
+class ReceiptFacts(unittest.TestCase):
+    def test_happy_path_reads_receipt(self):
+        r = flow.run_session(pp=paypal.MockPayPal())
+        f = r.get("receipt_facts")
+        self.assertIsNotNone(f)
+        self.assertEqual(f["source"], "mock")  # local parser without Clairic creds
+        self.assertTrue(f["matches_capture"])
+        self.assertEqual(f["total"], round(r["agreed"], 2))
+        self.assertAlmostEqual(sum(r["ruling"]["shares"].values()), r["agreed"], places=2)
+
+    def test_void_path_has_no_receipt(self):
+        r = flow.run_session(pp=paypal.MockPayPal(), scenario="void")
+        self.assertIsNone(r.get("receipt_facts"))
+
+    def test_receipt_failure_is_nonfatal(self):
+        from haggle import extract
+        orig = extract.extract
+        extract.extract = lambda *a, **k: (_ for _ in ()).throw(extract.ExtractUnavailable("boom"))
+        try:
+            r = flow.run_session(pp=paypal.MockPayPal())
+        finally:
+            extract.extract = orig
+        self.assertIsNone(r.get("receipt_facts"))
+        self.assertIn("capture", r["ids"])
+        self.assertTrue(any("Receipt read skipped" in s for s in r["steps"]))
+
+    def test_receipt_mismatch_only_warns(self):
+        from haggle import extract
+        orig = extract.extract
+        extract.extract = lambda text, fields: {"source": "mock", "model": None, "answers": {
+            "vendor": {"value": "Lakeshore Coffee Supply"}, "total": {"value": 999.99}, "date": {"value": "2026-10-19"}}}
+        try:
+            r = flow.run_session(pp=paypal.MockPayPal())
+        finally:
+            extract.extract = orig
+        f = r["receipt_facts"]
+        self.assertFalse(f["matches_capture"])
+        self.assertTrue(any("MISMATCH" in s for s in r["steps"]))
+        self.assertAlmostEqual(sum(r["ruling"]["shares"].values()), r["agreed"], places=2)
