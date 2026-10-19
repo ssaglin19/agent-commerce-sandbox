@@ -29,6 +29,13 @@ Google credits expire around Oct 27 and the Cloud account is paid. Before then:
 - Verified locally with screenshots of the return page (capture and void paths) in mock mode. Sandbox client keys are on Render since Oct 18, 2026 (owner approved Oct 17). Not yet verified: real PayPal sandbox buyer approval (needs a Personal sandbox buyer login) and live webhook delivery.
 - UPDATE Oct 15 5:53pm CDT: status.render.com showed Builds and Deploys Operational, one manual deploy succeeded, the wallet path and "Approve as buyer" button are live on https://haggle-court.onrender.com (mock mode, Simulated step wording verified in the browser). Earlier history: manual deploy returned "Deploy Error: Service Unavailable" on Oct 14 4:43-4:44pm CDT while https://status.render.com showed Builds and Deploys degraded (fix being monitored since 19:45 UTC). That Oct 14 attempt failed and the later Oct 15 deploy superseded it. Real PayPal sandbox buyer approval and live webhook delivery remain unverified.
 
+## Clairic extraction experiment (Oct 19, 2026)
+Scoped test of Cloudflare's Clairic (preview) as a fact extractor for the judge: it pulls typed receipt fields and verbatim chat claims (opt-outs, heavy-use claims, disputes, promises). It never assigns weights or verdicts; the judge still weighs the facts. Owner approved this scoped test Oct 19.
+- Code: src/haggle/extract.py (Cloudflare provider via CLOUDFLARE_ACCOUNT_ID + CLOUDFLARE_API_TOKEN from env only, plus a deterministic mock with the same interface; hard call budget, live failures raise instead of silently mocking; output can never contain weight/share/verdict keys).
+- Harness: scripts/clairic_extraction_check.py runs six synthetic cases with known ground truth, including a claim that contradicts the receipt and an injection-style chat line. One call per case (6 total live), answers persisted to tests/fixtures/clairic_extract_<source>.json so regression never re-calls. Six bounded cases are a smoke check, not an accuracy measurement.
+- Mock status: 6/6 cases pass offline; 44 unit tests pass (tests/test_extract.py added).
+- Live status: NOT RUN. Needs a scoped 1-day Cloudflare token (vault, one owner approval tap) and the account id. Text only; vision is not claimed. Judge prompt unchanged; any use in the actual judge path waits for the live results and an owner decision.
+
 ## Remaining work to submission (status Oct 17, 2026)
 
 ### Oct 18, 2026 update: hosted sandbox verified
