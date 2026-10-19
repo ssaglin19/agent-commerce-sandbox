@@ -88,3 +88,42 @@ class DissectTests(unittest.TestCase):
     def test_dissect_no_forbidden_keys(self):
         out = extract.dissect_case(RECEIPT, ["Ana: I'm in."])
         self.assertFalse(set(out["raw_answers"]) & extract.FORBIDDEN_KEYS)
+
+class SelectTests(unittest.TestCase):
+    def setUp(self):
+        os.environ.pop("CLOUDFLARE_ACCOUNT_ID", None); os.environ.pop("CLOUDFLARE_API_TOKEN", None)
+
+    def test_select_fields_shape(self):
+        f = extract.select_fields(["Ana: hi", "Ben: yo"])
+        self.assertIn("total", f)
+        self.assertIn("msg_0_statement", f)
+        self.assertIn("msg_1_statement", f)
+        self.assertEqual(f["msg_0_statement"]["type"], "text")
+
+    def test_select_mock_skips_bare_assent(self):
+        out = extract.select_case(RECEIPT, ["Ana: Looks right to me.", "Ben: I'll pay my share."])
+        idx = [s["message_index"] for s in out["statements"]]
+        self.assertEqual(idx, [1])
+        self.assertEqual(out["statements"][0]["source_line"], "Ben: I'll pay my share.")
+
+    def test_select_gate_drops_fragments_and_hallucinations(self):
+        os.environ["CLOUDFLARE_ACCOUNT_ID"] = "x"; os.environ["CLOUDFLARE_API_TOKEN"] = "x"
+        chat = ["Ana: I'm out, not paying for this.", "Ben: Looks right to me."]
+        fake = {"source": "clairic", "model": extract.MODEL, "answers": {
+            "msg_0_statement": {"value": "not paying for this", "confidence": 0.5},
+            "msg_1_statement": {"value": "made up words", "confidence": 0.6},
+        }}
+        orig = extract.extract
+        extract.extract = lambda state, fields: fake
+        try:
+            out = extract.select_case(RECEIPT, chat)
+        finally:
+            extract.extract = orig
+        self.assertEqual(len(out["statements"]), 1)
+        self.assertEqual(out["statements"][0]["message_index"], 0)
+        self.assertEqual(out["statements"][0]["source_line"], chat[0])
+        self.assertEqual(out["statements"][0]["quote"], "not paying for this")
+
+    def test_select_no_forbidden_keys(self):
+        out = extract.select_case(RECEIPT, ["Ana: I'm in."])
+        self.assertFalse(set(out["raw_answers"]) & extract.FORBIDDEN_KEYS)
