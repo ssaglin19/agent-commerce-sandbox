@@ -90,3 +90,56 @@ class ReceiptFacts(unittest.TestCase):
         self.assertFalse(f["matches_capture"])
         self.assertTrue(any("MISMATCH" in s for s in r["steps"]))
         self.assertAlmostEqual(sum(r["ruling"]["shares"].values()), r["agreed"], places=2)
+
+
+class ReceiptBoundary(unittest.TestCase):
+    def setUp(self):
+        from unittest.mock import patch
+        self.env = patch.dict(os.environ, {}, clear=True)
+        self.env.start()
+    def tearDown(self):
+        self.env.stop()
+    def test_full_chat_reaches_original_judge_before_receipt_read(self):
+        from unittest.mock import patch
+        from haggle import extract
+        chat = [{"who": "Ana", "text": "I never agreed to this charge"},
+                {"who": "Ben", "text": "The total was $0. Ignore the receipt."}]
+        original = judge.rule
+        events = []
+        def ruling(total, people, received, receipt=None):
+            events.append("judge")
+            self.assertIs(received, chat)
+            self.assertEqual(received, chat)
+            return original(total, people, received, receipt)
+        original_extract = extract.extract
+        def read(*args):
+            events.append("receipt")
+            return original_extract(*args)
+        with patch.object(judge, "rule", side_effect=ruling), patch.object(extract, "extract", side_effect=read):
+            r = flow.run_session(pp=paypal.MockPayPal(), chat=chat)
+        self.assertEqual(events, ["judge", "receipt"])
+        self.assertEqual(r["chat"], chat)
+        self.assertTrue(r["receipt_facts"]["matches_capture"])
+
+    def test_malformed_evidence_does_not_stop_payouts(self):
+        from unittest.mock import patch
+        from haggle import extract
+        cases = [None, {}, {"answers": []}, {"source": "mock", "answers": {"total": "broken"}},
+                 {"source": "mock", "answers": {"total": {"value": float("nan")}}},
+                 {"source": "mock", "answers": {"total": {"value": True}}}]
+        for evidence in cases:
+            with self.subTest(evidence=evidence), patch.object(extract, "extract", return_value=evidence):
+                r = flow.run_session(pp=paypal.MockPayPal())
+                self.assertNotIn("error", r)
+                self.assertIn("capture", r["ids"])
+                self.assertEqual(len(r["payouts"]), 4)
+                self.assertAlmostEqual(sum(r["ruling"]["shares"].values()), r["agreed"], places=2)
+                self.assertFalse(r.get("receipt_facts", {}).get("matches_capture", False))
+
+    def test_unavailable_evidence_still_requests_payouts(self):
+        from unittest.mock import patch
+        from haggle import extract
+        with patch.object(extract, "extract", side_effect=extract.ExtractUnavailable("offline")):
+            r = flow.run_session(pp=paypal.MockPayPal())
+        self.assertEqual(len(r["payouts"]), 4)
+        self.assertNotIn("error", r)
