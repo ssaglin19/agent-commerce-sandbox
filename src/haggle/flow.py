@@ -1,5 +1,5 @@
 """End-to-end court session: haggle -> hold -> judge -> capture or void -> splits."""
-import datetime
+import datetime, math
 from . import negotiation, judge, paypal, llm, extract
 
 RECEIPT_VENDOR = "Lakeshore Coffee Supply"
@@ -73,14 +73,25 @@ def read_receipt(out, agreed):
     except extract.ExtractUnavailable as e:
         out["steps"].append(f"Receipt read skipped ({e}); the captured amount is unaffected.")
         return
-    a = r["answers"]
-    facts = {"vendor": (a.get("vendor") or {}).get("value"),
-             "total": (a.get("total") or {}).get("value"),
-             "date": (a.get("date") or {}).get("value"),
-             "source": r["source"]}
-    facts["matches_capture"] = facts["total"] == round(agreed, 2)
+    # Receipt evidence is optional, including malformed provider responses. Never
+    # interrupt payout requests after capture because an evidence field is unusable.
+    answers = r.get("answers") if isinstance(r, dict) else None
+    if not isinstance(answers, dict):
+        out["steps"].append("Receipt read skipped (invalid evidence response); the captured amount is unaffected.")
+        return
+    def value(name):
+        field = answers.get(name)
+        return field.get("value") if isinstance(field, dict) else None
+    total = value("total")
+    if isinstance(total, bool) or not isinstance(total, (int, float)) or not math.isfinite(total):
+        total = None
+    facts = {"vendor": value("vendor") if isinstance(value("vendor"), str) else None,
+             "total": total,
+             "date": value("date") if isinstance(value("date"), str) else None,
+             "source": r.get("source") if isinstance(r.get("source"), str) else "unknown"}
+    facts["matches_capture"] = total is not None and total == round(agreed, 2)
     out["receipt_facts"] = facts
-    label = "Clairic" if r["source"] == "clairic" else "local parser"
+    label = {"clairic": "Clairic", "mock": "local parser"}.get(facts["source"], "unknown source")
     total = f"${facts['total']:.2f}" if isinstance(facts["total"], (int, float)) else "unknown total"
     note = "matches the captured amount" if facts["matches_capture"] else "MISMATCH vs the captured amount (captured amount stands)"
     out["steps"].append(f"Receipt read ({label}): {facts['vendor']}, {total}, {facts['date']} - {note}.")
