@@ -43,5 +43,5 @@ The public free Render instance can take time to wake; a single failed fetch is 
 - The canned group demo simulates human approval and merchant purchase. It is not a production human-authentication flow.
 - Mock PayPal and simulated Venmo are never labeled real sandbox funding.
 - A payout batch ID confirms submission, not delivery. Failed payouts stay distribution_pending; failed refunds/voids stay compensation_pending.
-- Webhooks are bounded and deduplicated. Sandbox mode rejects unsigned events or a missing webhook ID. Mock receipts are unverified and never drive settlement. Live PayPal webhook delivery is still untested.
+- Webhooks are bounded and deduplicated. Sandbox mode rejects unsigned events or a missing webhook ID. Mock receipts are unverified and never drive settlement. Live webhook delivery verified against the real sandbox Oct 23, 2026 (signed capture accepted, simulated unverifiable post refused).
 - The current event log is in memory, not a durable idempotency or recovery ledger. Do not use this demo with real funds.
