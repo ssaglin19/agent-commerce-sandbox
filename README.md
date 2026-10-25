@@ -17,7 +17,7 @@ Work in progress. A demo runs on Render in PayPal sandbox mode: https://haggle-c
 - `docs/` - concept and notes
 
 ## Try the live AI role yourself
-The public demo may run scripted lines (no key is kept on it after Oct 26, 2026, and it is capped). To see the Gemini role, run locally with your own Google Cloud service-account key (Vertex AI enabled):
+The public demo runs scripted lines (the hosted Google key was removed Oct 25, 2026 ahead of trial-credit expiry). To see the Gemini role, run locally with your own Google Cloud service-account key (Vertex AI enabled):
 
     export GOOGLE_APPLICATION_CREDENTIALS=/path/to/key.json   # or GOOGLE_SA_JSON with the JSON text
     PYTHONPATH=src python3 -m haggle.server
