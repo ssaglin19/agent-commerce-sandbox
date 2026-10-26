@@ -3,7 +3,8 @@
 Providers, first match wins:
   1. Google Vertex AI (Gemini) via a service account: GOOGLE_SA_JSON (the JSON text) or GOOGLE_APPLICATION_CREDENTIALS (a file path).
      Project comes from GOOGLE_CLOUD_PROJECT or the key's own project_id.
-  2. Anthropic: ANTHROPIC_API_KEY
+  2. Google Gemini API (AI Studio) via GEMINI_API_KEY. A free AI Studio key works with no billing account.
+  3. Anthropic: ANTHROPIC_API_KEY
 Keys come from the environment only. Nothing is stored in the repo.
 Spend caps: HAGGLE_MAX_LLM_CALLS per process (default 40) and HAGGLE_MAX_LLM_CALLS_PER_DAY (default 300, counted per UTC day
 in this process; a restart resets it, so it is a guard rail, not a billing control). Past a cap, or on any error, scripted mode.
@@ -30,6 +31,8 @@ def _sa():
 def _provider():
     if os.environ.get("GOOGLE_SA_JSON") or os.environ.get("GOOGLE_APPLICATION_CREDENTIALS"):
         return "vertex"
+    if os.environ.get("GEMINI_API_KEY"):
+        return "gemini"
     if os.environ.get("ANTHROPIC_API_KEY"):
         return "anthropic"
     return None
@@ -74,6 +77,20 @@ def _vertex(system, prompt, max_tokens):
         j = json.load(r)
     return "".join(p.get("text", "") for p in j["candidates"][0]["content"]["parts"]).strip()
 
+def _gemini(system, prompt, max_tokens):
+    """Gemini API (AI Studio) with a plain API key. Free-tier keys need no billing account."""
+    key = os.environ["GEMINI_API_KEY"]; model = os.environ.get("HAGGLE_MODEL", "gemini-3.5-flash-lite")
+    url = os.environ.get("HAGGLE_GEMINI_URL") or (
+        f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent")
+    body = json.dumps({"systemInstruction": {"parts": [{"text": system}]},
+                       "contents": [{"role": "user", "parts": [{"text": prompt}]}],
+                       "generationConfig": {"maxOutputTokens": max_tokens, "temperature": 0.9}}).encode()
+    sep = "&" if "?" in url else "?"
+    req = urllib.request.Request(url + sep + "key=" + urllib.parse.quote(key), body, {"content-type": "application/json"})
+    with urllib.request.urlopen(req, timeout=20) as r:
+        j = json.load(r)
+    return "".join(p.get("text", "") for p in j["candidates"][0]["content"]["parts"]).strip()
+
 def _anthropic(system, prompt, max_tokens):
     body = json.dumps({"model": os.environ.get("HAGGLE_MODEL", "claude-3-5-haiku-latest"),
                        "max_tokens": max_tokens, "system": system,
@@ -95,7 +112,7 @@ def complete(system, prompt, max_tokens=120):
         return None
     _calls += 1; _day["n"] += 1
     try:
-        text = (_vertex if p == "vertex" else _anthropic)(system, prompt, max_tokens)
+        text = {"vertex": _vertex, "gemini": _gemini}.get(p, _anthropic)(system, prompt, max_tokens)
         LAST["provider"] = p
         if text: STATS["ok"] += 1
         return text or None
