@@ -16,7 +16,7 @@ H.reply = "hi"
 
 class T(unittest.TestCase):
     def setUp(self):
-        for k in ("ANTHROPIC_API_KEY", "GOOGLE_APPLICATION_CREDENTIALS", "GOOGLE_CLOUD_PROJECT", "GOOGLE_SA_JSON", "HAGGLE_MAX_LLM_CALLS_PER_DAY", "HAGGLE_VERTEX_URL", "HAGGLE_TOKEN_URL"): os.environ.pop(k, None)
+        for k in ("ANTHROPIC_API_KEY", "GEMINI_API_KEY", "GOOGLE_APPLICATION_CREDENTIALS", "GOOGLE_CLOUD_PROJECT", "GOOGLE_SA_JSON", "HAGGLE_GEMINI_URL", "HAGGLE_MAX_LLM_CALLS_PER_DAY", "HAGGLE_VERTEX_URL", "HAGGLE_TOKEN_URL"): os.environ.pop(k, None)
         llm._calls = 0; llm._day.update(d=None, n=0); llm._tok.update(v=None, exp=0); H.seen.clear()
     def test_keyless_is_scripted(self):
         self.assertIsNone(llm.complete("s", "p")); self.assertEqual(llm.provider(), "scripted")
@@ -40,6 +40,18 @@ class T(unittest.TestCase):
         srv = self._vertex(); H.reply = "ok"; os.environ["HAGGLE_MAX_LLM_CALLS_PER_DAY"] = "1"
         self.assertEqual(llm.complete("s", "p"), "ok"); self.assertIsNone(llm.complete("s", "p"))
         self.assertEqual(llm.STATS["ok"] >= 1, True); srv.shutdown()
+    def _gemini(self):
+        srv = HTTPServer(("127.0.0.1", 0), H); threading.Thread(target=srv.serve_forever, daemon=True).start()
+        os.environ.update(GEMINI_API_KEY="TESTKEY", HAGGLE_GEMINI_URL="http://127.0.0.1:%d/gen" % srv.server_port)
+        return srv
+    def test_gemini_api_key_path(self):
+        srv = self._gemini(); H.reply = "Yo."
+        self.assertEqual(llm.provider(), "gemini")
+        self.assertEqual(llm.complete("s", "p"), "Yo.")
+        self.assertEqual(H.seen[0][0], "/gen?key=TESTKEY"); self.assertIsNone(H.seen[0][1]); srv.shutdown()
+    def test_gemini_error_falls_back(self):
+        srv = self._gemini(); srv.shutdown()
+        self.assertIsNone(llm.complete("s", "p"))
     def test_price_always_from_code(self):
         from haggle import negotiation
         srv = self._vertex(); H.reply = "Take $1.00 you cheapskate, 5 dollars!\nsecond line"
