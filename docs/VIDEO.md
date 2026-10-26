@@ -23,6 +23,21 @@ Record Haggle Court and group purchases as one submission. Never show credential
 | 2:05-2:35 | One capture fails, participant table | "If a capture fails, settlement stops. Earlier captures are refunded and remaining holds released. Failed refunds or payouts stay pending rather than being called complete." |
 | 2:35-2:50 | Repo and closing title | "One submission: negotiation plus group purchases. Python, PayPal Orders, Payments and Payouts. The MIT code and tests are public." |
 
+## Final recording plan (pending the free AI key, Oct 26, 2026)
+Record once the hosted demo runs live Gemini via GEMINI_API_KEY (free Google AI Studio key, no billing). Target under 3:00, captioned, hosted sandbox UI only - no mock labels, because this cut shows the real sandbox:
+
+| Time | Screen | Narration |
+|---|---|---|
+| 0:00-0:12 | Haggle Court title, /healthz showing "ai": "gemini" and "mode": "sandbox" | "Group buys die in the group chat. Haggle Court gives the argument to two bots and the money to PayPal." |
+| 0:12-0:40 | Live court run: Gemini-written banter, locked price | "Statler and Waldorf haggle to a locked price. The banter is Gemini; every price and share is computed by code." |
+| 0:40-1:10 | Authorize, judge with receipt evidence check, capture | "PayPal sandbox holds the funds. The judge reads the receipt and the full group chat, then captures. Receipt evidence only warns; it never decides money." |
+| 1:10-1:30 | Bail-out run: void, no charge | "When the group backs out, the hold is voided. Nothing is captured." |
+| 1:30-2:10 | Pool happy run: approvals, capture, payout batch request; one-failure unwind: refund and release | "The group coordinator captures exact approved shares and requests remainder payouts. If one capture fails, settlement stops, earlier captures are refunded and the rest released." |
+| 2:10-2:35 | Webhook note: signed capture accepted Oct 23, simulated unverifiable post refused; event log | "Signed webhooks confirm events; unverifiable posts are refused." |
+| 2:35-2:55 | Repo, tests (61), closing title | "Python, PayPal Orders, Payments, Payouts and webhooks. MIT, public, tested." |
+
+Accuracy gates for this cut: record only while /healthz reports "ai": "gemini"; if the key is absent or capped the cut must say scripted. Sandbox IDs may be shown; no credentials, vault screens or account menus. Publish only after owner review and separate publication approval.
+
 ## Recording gates
 - Dry-run all four scenarios before recording. No automatic retries of settlement requests.
 - Mock mode is a valid rehearsal, but label it mock throughout. Do not narrate mock IDs as live sandbox evidence.
