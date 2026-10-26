@@ -28,7 +28,7 @@ Record Haggle Court and group purchases as one submission. Never show credential
 - Mock mode is a valid rehearsal, but label it mock throughout. Do not narrate mock IDs as live sandbox evidence.
 - Use a verified sandbox configuration for the final sandbox recording. The hosted demo has run the real PayPal sandbox since Oct 18, 2026 (owner-approved sandbox keys on Render; verified IDs in HANDOFF.md).
 - Keep the mode notice and SIMULATED labels visible. Participant approvals in the canned demo are not real human authentication.
-- Live webhook delivery is not verified yet. Do not claim webhook-driven settlement.
-- Banter wording must be true on recording day: with the Google key on Render the banter is Gemini-written; after the planned Oct 26 key removal it is scripted.
+- Live webhook delivery was verified Oct 23, 2026 (real signed capture accepted, simulated unverifiable post refused). The current review cut does not show it; a final recording may cite it.
+- Banter wording must be true on recording day: the hosted demo has run scripted since the Oct 25, 2026 Google-key removal. A GEMINI_API_KEY provider (free Google AI Studio key, no billing account) exists in code since Oct 26, 2026 and re-enables Gemini banter once a key is configured; until then do not narrate the banter as model-written.
 - ACCURACY (Oct 18, 2026): the Oct 7 rehearsal cut shows the MOCK flow and the hosted demo now runs the real sandbox. A private revision (rehearsal-mock-v2-accuracy.mp4, 2:54) adds an intro card stating that plainly, so the mock-labeled package is truthful as it stands; re-recording against the live sandbox flow remains the other option. Owner reviews and decides before any upload; no video link exists yet.
 - Upload/publish only after the final video and its audience have been reviewed. No video link exists yet.
