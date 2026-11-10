@@ -7,7 +7,11 @@ button{padding:.6rem 1.2rem;font-size:1rem;margin-right:.5rem;background:var(--b
 <h1>Haggle Court</h1><p id=mode>Sandbox or mock demonstration only. No real money. Bot banter is scripted unless an approved model is configured.</p><p>Statler haggles, Waldorf heckles, PayPal holds the money, the judge decides.</p>
 <button onclick="go('happy')">Open court</button><button onclick="go('void')">Group bails out</button><button onclick="wallet()" title="Buyer approves the hold in PayPal (mock in this demo)">Approve as buyer</button><a href="/pool" style="margin-left:12px">Next: settle the group split in Pool</a><span id=m></span><div id=o></div>
 <script>
-fetch('/healthz').then(r=>r.json()).then(h=>{if(h.ai&&h.ai!=='scripted')document.getElementById('mode').textContent='Sandbox or mock demonstration only. No real money. Bot banter and the judge\'s weighting come from Google Gemini (Vertex AI) with scripted fallback; code computes every price and share.'}).catch(()=>{});
+fetch('/healthz').then(r=>r.json()).then(h=>{
+ const labels={vertex:'Google Gemini (Vertex AI)',gemini:'Google Gemini (AI Studio API)',anthropic:'Anthropic'};
+ const label=labels[h.ai];
+ if(label)document.getElementById('mode').textContent='Sandbox or mock demonstration only. No real money. Configured AI provider: '+label+'. Configuration is not proof of a successful model call. Scripted fallback remains enabled; code computes every price and share.';
+}).catch(()=>{});
 const sleep=ms=>new Promise(r=>setTimeout(r,ms)),o=document.getElementById('o');
 const esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 const add=(h,c)=>{o.insertAdjacentHTML('beforeend',`<div class="t ${c||''}">${h}</div>`)};
