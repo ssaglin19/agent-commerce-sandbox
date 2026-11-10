@@ -1,5 +1,18 @@
 # Handoff notes
 
+## Current state (November 10, 2026, 5:28am Central)
+- Deadline rechecked against official rules today: Thursday November 12, 2026, noon Pacific / 2pm Central. Source: https://paypalaihackathon.devpost.com/rules . Entry is still a draft, not submitted.
+- Latest deployed code: fad1466, Render deploy dep-dbpftd3bc2fs73a36bd0 succeeded today. Gemini API keys now go in the x-goog-api-key header, not query strings. New regression checks both plain and pre-existing-query URLs. Fresh offline suite: 62 tests pass.
+- Hosted health: ok / sandbox / scripted. No Google model credential added; no successful model calls. The API-key entry remains absent. Required before activation: key plus evidence tying its owning project to Free tier/no linked billing. Caps do not authorize spending. Do not reuse the historical billed-project key or substitute another Google identity.
+- New private review video: haggle-hosted-scripted-review.mp4, 2:07, 1280x900, silent and captioned. Actual hosted motion footage, four sandbox scenarios run once each, not the old screenshot-only cut. Persistent labels state scripted AI / sandbox / no live-model proof. Owner review, public upload and submission are separate holds.
+- Court happy: order 2E5743984L782623S, authorization 8UU35435U29102515, capture 5EC97644UH036714A ($168), payout batch HD5ZVEPR8VYGJ requested. Court bail-out: order 3KL81721W3399534L, authorization 6UX32731NS7874842, voided with no capture.
+- Pool happy: complete; three real sandbox PayPal captures, remainder payout batch QHQJBF2VBQQDS requested. Pool failure: cancelled; Ana refund 81126476A8292302F and Ben refund 29X698285W933815J returned after Cy capture failure. Venmo remains simulated. Participant approvals and merchant purchase are simulated. Payout delivery is not confirmed. Buyer-wallet approval is optional for this demo and still untested.
+- Devpost technical draft corrections were approved and saved November 6. Rechecked today: corrected story/tags and demo/testing/AI-tools answers persist. Required video field and five personal survey answers remain empty. Existing individual/US/new-project declarations need owner review. Terms not checked; nothing submitted.
+- /healthz identifies a configured provider, not a successful model call. A final live-AI recording must verify actual session model_calls_ok and generated content, no fallback/error. Even then Pool simulation labels stay visible.
+- Historical notes below are superseded where they disagree with this dated state, including old env-variable lists, test counts, expired key-removal plans and old video descriptions. No credential values belong in this file.
+
+---
+
 ## Current state (reconciled Oct 20, 2026)
 - Last verified Render deploy: 358d28b8a902bc13962c47d0fc9a600256230d58, Oct 25, 2026 ~12:30pm CT (env-change redeploy of the same code). /healthz returns ok/sandbox/scripted: the Google service-account key was removed from Render on Oct 25 ahead of the ~Oct 27 trial-credit expiry, so the hosted demo now uses scripted banter/judge and cannot make model calls. Re-adding requires verified credit coverage within the original grant or the owner's explicit funded-use approval; do not silently restore. Earlier deploy/health lines below are history.
 - 59 offline tests pass on a fresh clone. Full chat and original judge are preserved; receipt evidence cannot decide money or stop payouts because fields are malformed/unavailable. No Clairic access activated.
