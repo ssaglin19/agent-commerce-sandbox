@@ -20,6 +20,16 @@ class T(unittest.TestCase):
     def setUp(self):
         for k in ("ANTHROPIC_API_KEY", "GEMINI_API_KEY", "GOOGLE_APPLICATION_CREDENTIALS", "GOOGLE_CLOUD_PROJECT", "GOOGLE_SA_JSON", "HAGGLE_GEMINI_URL", "HAGGLE_MAX_LLM_CALLS_PER_DAY", "HAGGLE_VERTEX_URL", "HAGGLE_TOKEN_URL"): os.environ.pop(k, None)
         llm._calls = 0; llm._day.update(d=None, n=0); llm._tok.update(v=None, exp=0); H.seen.clear(); H.key_headers.clear()
+    def test_labels_and_fallback_disclosure(self):
+        from pathlib import Path
+        page = (Path(__file__).parents[1] / 'src/haggle/web/index.html').read_text()
+        self.assertIn("vertex:'Google Gemini (Vertex AI)'", page)
+        self.assertIn("gemini:'Google Gemini (AI Studio API)'", page)
+        self.assertIn("anthropic:'Anthropic'", page)
+        self.assertIn('Configuration is not proof of a successful model call.', page)
+        self.assertIn('Scripted fallback remains enabled', page)
+        self.assertIn('Bot banter is scripted unless an approved model is configured.', page)
+        self.assertNotIn("weighting come from Google Gemini", page)
     def test_keyless_is_scripted(self):
         self.assertIsNone(llm.complete("s", "p")); self.assertEqual(llm.provider(), "scripted")
     def _vertex(self):
