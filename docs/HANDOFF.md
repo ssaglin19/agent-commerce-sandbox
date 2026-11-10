@@ -1,5 +1,18 @@
 # Handoff notes
 
+## Current state (November 10, 2026, 5:58am Central)
+- Latest deployed code: c46c3a8, Render dep-dbpg1l88v5cc73e5ieng. Provider banner accurately labels configured providers and does not claim successful calls. Fresh offline suite: 63 tests pass.
+- Public hosted demo remains sandbox/scripted. No model key is installed on Render and public callers cannot use the private-test key. Google trial-credit project is not used.
+- Existing Gemini API key recovered from an active separate project. Cloud Billing API verified billingEnabled=false and no linked billing account before private testing. Gemini API free-tier terms approved for adult-only synthetic hackathon tests; no private data or paid usage.
+- Live Gemini 3.5 Flash-Lite component proof: eight successful buyer/seller banter calls. Original judge call returned503, and the strict private test voided its mock hold. One separate judge retry succeeded with JSON weights and verdict. Code clamped weights and computed shares Ana $80, Ben $20, Cam $48, Dee $20, summing exactly to $168. This is not one uninterrupted sandbox-payment plus live-AI run. Raw sanitized proof is preserved with the private review material.
+- Model availability: Gemini2.5 Flash appeared in models.list and quota metadata but generateContent returned404, no longer available to new users. Gemini3.8 Flash and3.5 Flash-Lite initially returned503;3.5 Flash-Lite then succeeded. Current project's3.5 Flash-Lite ceiling from Service Usage API:15 requests/minute,250000 input tokens/minute,500 requests/day. Quota ceilings do not prove remaining daily capacity. No paid fallback.
+- Current private review cut: haggle-private-review-with-ai.mp4,2:40,1280x900,silent/captioned. Hosted sandbox motion is labeled scripted; separate recorded AI-output cards disclose mock payment and judge retry. Video is private, not uploaded or submitted, and not final owner signoff.
+- Devpost survey choices saved and reopened:8/10, significant learning, yes AI usefulness, no feedback contact; reason reflects sandbox payment/refund work and documentation friction. Technical corrections remain saved. Video field remains empty. Contest declarations,terms,public-video approval and submission remain separate holds.
+- Next: private integrated sandbox+AI proof. Local secure use of the existing PayPal sandbox credential requires a vault access grant; do not bypass a refusal or expose public AI endpoints. Do not call the separate component proof integrated success.
+- Older dated state below is historical and superseded where it disagrees. Do not put credentials,OAuth tokens or private account sources in repository files.
+
+---
+
 ## Current state (November 10, 2026, 5:28am Central)
 - Deadline rechecked against official rules today: Thursday November 12, 2026, noon Pacific / 2pm Central. Source: https://paypalaihackathon.devpost.com/rules . Entry is still a draft, not submitted.
 - Latest deployed code: fad1466, Render deploy dep-dbpftd3bc2fs73a36bd0 succeeded today. Gemini API keys now go in the x-goog-api-key header, not query strings. New regression checks both plain and pre-existing-query URLs. Fresh offline suite: 62 tests pass.
