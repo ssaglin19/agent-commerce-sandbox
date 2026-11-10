@@ -1,3 +1,15 @@
+# Current private integrated review (November 10, 2026)
+
+Current artifact: `haggle-integrated-private-review.mp4`, 2:45, 1280x900, silent/captioned. It combines actual hosted sandbox motion with a clearly labeled UI replay of the exact recorded private integrated response. The replay is not another live API click. No public upload or submission.
+
+Private integrated run: 9/9 Gemini 3.5 Flash-Lite calls succeeded without fallback/error/retry. Sandbox order 1BY9806024255645F completed, authorization 7TE07055MB1653206 captured, capture 7JS84506DF6563157 completed for $168. Fresh PayPal GETs verified each. Payout batch XWXMA4H24WPN4 pending, not delivered. Code-calculated shares: Ana $81.11, Ben $28.97, Cam $28.96, Dee $28.96. Synthetic group chat and receipt only. Google project billing was disabled with no linked billing account before the run. Public demo remains sandbox/scripted and has no model key.
+
+Inspected final video contact sheet, full-resolution integrated UI response and updated source/replay/limits cards. Earlier separate component proof and404/503 failures remain historical evidence, not the current success claim. The local test harness had a bounded503 retry but no retry was needed in this successful run. Production fallback code was unchanged.
+
+Limits remain visible: Pool approvals, merchant purchase and Venmo simulated; receipt synthetic/local parser; real buyer-wallet approval and payout delivery unproven. Owner video review, public upload and contest declarations/terms/submission remain separate gates. The older notes below are superseded where they disagree with this current artifact.
+
+---
+
 # Private hosted-motion review (November 10, 2026)
 
 Current private review: `haggle-hosted-scripted-review.mp4`, 2:07, 1280x900, silent with embedded captions. Actual motion footage from the hosted service at commit fad1466, not a screenshot slideshow. Four sandbox scenarios ran once each: Court capture/payout request, Court void, Pool success, Pool capture-failure compensation. All scenes retain scripted-AI and sandbox labels. No successful model calls occurred. The receipt is synthetic and read by the local parser. Pool participant approvals, merchant purchase and Venmo are simulated. Payout delivery is not confirmed. Buyer-wallet approval remains untested. No credentials or account menus appear.
