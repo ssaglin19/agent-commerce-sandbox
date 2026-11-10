@@ -5,8 +5,10 @@ from haggle import llm, judge
 
 class H(BaseHTTPRequestHandler):
     seen = []
+    key_headers = []
     def do_POST(self):
         n = int(self.headers.get("content-length", 0)); body = self.rfile.read(n)
+        H.key_headers.append(self.headers.get("x-goog-api-key"))
         H.seen.append((self.path, self.headers.get("Authorization"), body))
         if self.path == "/token": out = {"access_token": "FAKE", "expires_in": 3600}
         else: out = {"candidates": [{"content": {"parts": [{"text": H.reply}]}}]}
@@ -17,7 +19,7 @@ H.reply = "hi"
 class T(unittest.TestCase):
     def setUp(self):
         for k in ("ANTHROPIC_API_KEY", "GEMINI_API_KEY", "GOOGLE_APPLICATION_CREDENTIALS", "GOOGLE_CLOUD_PROJECT", "GOOGLE_SA_JSON", "HAGGLE_GEMINI_URL", "HAGGLE_MAX_LLM_CALLS_PER_DAY", "HAGGLE_VERTEX_URL", "HAGGLE_TOKEN_URL"): os.environ.pop(k, None)
-        llm._calls = 0; llm._day.update(d=None, n=0); llm._tok.update(v=None, exp=0); H.seen.clear()
+        llm._calls = 0; llm._day.update(d=None, n=0); llm._tok.update(v=None, exp=0); H.seen.clear(); H.key_headers.clear()
     def test_keyless_is_scripted(self):
         self.assertIsNone(llm.complete("s", "p")); self.assertEqual(llm.provider(), "scripted")
     def _vertex(self):
@@ -48,7 +50,17 @@ class T(unittest.TestCase):
         srv = self._gemini(); H.reply = "Yo."
         self.assertEqual(llm.provider(), "gemini")
         self.assertEqual(llm.complete("s", "p"), "Yo.")
-        self.assertEqual(H.seen[0][0], "/gen?key=TESTKEY"); self.assertIsNone(H.seen[0][1]); srv.shutdown()
+        self.assertEqual(H.seen[0][0], "/gen"); self.assertEqual(H.key_headers[0], "TESTKEY"); self.assertIsNone(H.seen[0][1]); srv.shutdown(); srv.server_close()
+    def test_gemini_key_never_in_url(self):
+        srv = self._gemini(); H.reply = "ok"
+        os.environ["HAGGLE_GEMINI_URL"] += "?existing=1"
+        try:
+            self.assertEqual(llm.complete("s", "p"), "ok")
+            self.assertEqual(H.seen[0][0], "/gen?existing=1")
+            self.assertNotIn("TESTKEY", H.seen[0][0])
+            self.assertEqual(H.key_headers[0], "TESTKEY")
+        finally:
+            srv.shutdown(); srv.server_close()
     def test_gemini_error_falls_back(self):
         srv = self._gemini(); srv.shutdown()
         self.assertIsNone(llm.complete("s", "p"))
