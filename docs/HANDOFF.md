@@ -1,5 +1,14 @@
 # Handoff notes
 
+## Integrated proof update (November 10, 2026, 6:05am Central)
+- One private run succeeded:9/9 Gemini3.5 Flash-Lite calls, no fallback,error or retry. Synthetic built-in group chat only; no public listener or model credential on Render. Free-project billing rechecked immediately before run: disabled,no linked billing account.
+- PayPal sandbox order1BY9806024255645F COMPLETED, authorization7TE07055MB1653206 CAPTURED $168.00, capture7JS84506DF6563157 COMPLETED $168.00, verified by fresh PayPal GETs. Payout batchXWXMA4H24WPN4 PENDING; do not claim delivered. Code-calculated shares:Ana81.11,Ben28.97,Cam28.96,Dee28.96, total168.00.
+- This supersedes the separate-component-only gate below. Earlier404/503 failures remain real history. A bounded private test harness was ready to retry503 once after30s but this successful run needed no retry; production fallback code was unchanged.
+- Revised private review cut: haggle-integrated-private-review.mp4. Hosted sandbox motion still has scripted labels; integrated section explicitly replays the exact recorded private-run response in the UI, not a second live click. No public upload or submission. Remaining owner gates:final review,public-video upload,contest declarations/terms and submission. Public AI stays off. Buyer-wallet approval and payout delivery unproven; Pool simulation labels remain.
+- Sanitized raw response and fresh payment status evidence accompany the private review artifact. No secrets or private account identifiers in this record.
+
+---
+
 ## Current state (November 10, 2026, 5:58am Central)
 - Latest deployed code: c46c3a8, Render dep-dbpg1l88v5cc73e5ieng. Provider banner accurately labels configured providers and does not claim successful calls. Fresh offline suite: 63 tests pass.
 - Public hosted demo remains sandbox/scripted. No model key is installed on Render and public callers cannot use the private-test key. Google trial-credit project is not used.
