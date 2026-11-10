@@ -85,8 +85,7 @@ def _gemini(system, prompt, max_tokens):
     body = json.dumps({"systemInstruction": {"parts": [{"text": system}]},
                        "contents": [{"role": "user", "parts": [{"text": prompt}]}],
                        "generationConfig": {"maxOutputTokens": max_tokens, "temperature": 0.9}}).encode()
-    sep = "&" if "?" in url else "?"
-    req = urllib.request.Request(url + sep + "key=" + urllib.parse.quote(key), body, {"content-type": "application/json"})
+    req = urllib.request.Request(url, body, {"content-type": "application/json", "x-goog-api-key": key})
     with urllib.request.urlopen(req, timeout=20) as r:
         j = json.load(r)
     return "".join(p.get("text", "") for p in j["candidates"][0]["content"]["parts"]).strip()
